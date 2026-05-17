@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mfumo wa Biashara</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script type="module">
+
+    <!-- Firebase SDK (Compat - works with regular scripts) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script>
         // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         // TODO: Add SDKs for Firebase products that you want to use
         // https://firebase.google.com/docs/web/setup#available-libraries
         // Your web app's Firebase configuration
@@ -20,7 +23,8 @@
           appId: "1:508771625396:web:bad17918ea86a2aee26ae1"
         };
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
+        const app = firebase.initializeApp(firebaseConfig);
+        window._fbdb = firebase.firestore();
     </script>
     <style>
         :root {
@@ -1401,6 +1405,103 @@
                 }
             });
         });
+    </script>
+
+    <script>
+        /* ══════════════════════════════════════════════════════════
+           FIREBASE FIRESTORE SYNC LAYER
+           - getFirebaseKey()  : unique key per business (localStorage)
+           - syncToFirebase()  : write all data to Firestore
+           - loadFromFirebase(): read Firestore on startup & update memory
+           Images are kept in localStorage only (avoid Firestore 1MB limit)
+           ══════════════════════════════════════════════════════════ */
+
+        function getFirebaseKey() {
+            let key = localStorage.getItem('biz_firebase_key');
+            if (!key) {
+                key = 'biz_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                localStorage.setItem('biz_firebase_key', key);
+            }
+            return key;
+        }
+
+        async function syncToFirebase() {
+            if (!window._fbdb || !biz_user) return;
+            try {
+                const bizKey = getFirebaseKey();
+                // Strip product images before saving — keeps document under Firestore 1MB limit
+                const productsNoImg = biz_products.map(function(p) {
+                    var copy = Object.assign({}, p);
+                    delete copy.image;
+                    return copy;
+                });
+                await window._fbdb.collection('businesses').doc(bizKey).set({
+                    biz_user:      biz_user,
+                    biz_categories: biz_categories,
+                    biz_products:  productsNoImg,
+                    biz_expenses:  biz_expenses,
+                    biz_receipts:  biz_receipts.slice(-200),
+                    biz_summary:   biz_summary.slice(-365),
+                    biz_session:   biz_session,
+                    biz_orders:    biz_orders,
+                    lastUpdated:   new Date().toISOString()
+                });
+            } catch(e) {
+                console.warn('Firebase sync error (check Firestore rules in Firebase Console):', e);
+            }
+        }
+
+        async function loadFromFirebase() {
+            if (!window._fbdb) return;
+            try {
+                const bizKey = getFirebaseKey();
+                const snap = await window._fbdb.collection('businesses').doc(bizKey).get();
+                if (!snap.exists) return;
+                const d = snap.data();
+                // Keep locally-stored product images (they are not in Firestore)
+                const localProds = JSON.parse(localStorage.getItem('biz_products')) || [];
+                if (d.biz_user)       localStorage.setItem('biz_user',       JSON.stringify(d.biz_user));
+                if (d.biz_categories) localStorage.setItem('biz_categories', JSON.stringify(d.biz_categories));
+                if (d.biz_products) {
+                    var merged = d.biz_products.map(function(fp) {
+                        var lp = localProds.find(function(p){ return p.id === fp.id; });
+                        return lp ? Object.assign({}, fp, { image: lp.image }) : fp;
+                    });
+                    localStorage.setItem('biz_products', JSON.stringify(merged));
+                }
+                if (d.biz_expenses) localStorage.setItem('biz_expenses', JSON.stringify(d.biz_expenses));
+                if (d.biz_receipts) localStorage.setItem('biz_receipts', JSON.stringify(d.biz_receipts));
+                if (d.biz_summary)  localStorage.setItem('biz_summary',  JSON.stringify(d.biz_summary));
+                if (d.biz_session)  localStorage.setItem('biz_session',  JSON.stringify(d.biz_session));
+                if (d.biz_orders)   localStorage.setItem('biz_orders',   JSON.stringify(d.biz_orders));
+
+                // Refresh in-memory variables so the app sees the Firebase data
+                biz_user       = JSON.parse(localStorage.getItem('biz_user')) || null;
+                biz_categories = JSON.parse(localStorage.getItem('biz_categories')) || [];
+                biz_products   = JSON.parse(localStorage.getItem('biz_products')) || [];
+                biz_expenses   = JSON.parse(localStorage.getItem('biz_expenses')) || [];
+                biz_receipts   = JSON.parse(localStorage.getItem('biz_receipts')) || [];
+                biz_summary    = JSON.parse(localStorage.getItem('biz_summary')) || [];
+                biz_orders     = JSON.parse(localStorage.getItem('biz_orders')) || [];
+                biz_session    = JSON.parse(localStorage.getItem('biz_session')) || { isOpen: false, startTime: null, revenue: 0, cogs: 0, expenses: 0, soldProducts: {} };
+            } catch(e) {
+                console.warn('Firebase load error (check Firestore rules in Firebase Console):', e);
+            }
+        }
+
+        // Hook saveData() — every local save also syncs to Firestore
+        var _origSaveData = saveData;
+        saveData = function() {
+            _origSaveData();
+            syncToFirebase();
+        };
+
+        // Hook window.onload — load Firestore data BEFORE the app initialises
+        var _origOnload = window.onload;
+        window.onload = async function() {
+            await loadFromFirebase();
+            if (_origOnload) _origOnload();
+        };
     </script>
 </body>
 </html>
