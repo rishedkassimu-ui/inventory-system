@@ -5,23 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mfumo wa Biashara</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Firebase: importmap lets the browser resolve bare specifiers like "firebase/app" -->
-    <script type="importmap">
-    {
-      "imports": {
-        "firebase/app":       "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
-        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
-      }
-    }
-    </script>
     <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-        // Your web app's Firebase configuration
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        
         const firebaseConfig = {
           apiKey: "AIzaSyC993dQblmxWffnx_VrBX_t3u3VOuC_2uQ",
           authDomain: "inventory-system-3292e.firebaseapp.com",
@@ -30,14 +18,16 @@
           messagingSenderId: "508771625396",
           appId: "1:508771625396:web:bad17918ea86a2aee26ae1"
         };
-        // Initialize Firebase
+        
         const app = initializeApp(firebaseConfig);
-
-        // Expose Firebase db and Firestore functions to the data sync layer
-        window._fbApp        = app;
-        window._fbdb         = getFirestore(app);
-        window._fbFirestore  = { doc, setDoc, getDoc };
-        document.dispatchEvent(new Event('firebase-ready'));
+        
+        // Expose Firebase tools to global window object for the main script to use
+        window.db = getDatabase(app);
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbOnValue = onValue;
+        window.auth = getAuth(app);
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
     </script>
     <style>
         :root {
@@ -274,112 +264,6 @@
         .customer-main { padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; display: flex; gap: 20px; flex-wrap: wrap;}
         @media(max-width: 768px) { .customer-main { flex-direction: column; } }
         .order-status-card { background: white; padding: 15px; border-radius: 8px; border-left: 4px solid var(--warning); margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
-
-        /* ============================================================
-           RESPONSIVE DESIGN — PHONES, TABLETS & DESKTOPS (ADDED ONLY)
-           ============================================================ */
-
-        /* Hamburger button — hidden on desktop */
-        #menuToggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 26px;
-            cursor: pointer;
-            color: var(--dark);
-            padding: 4px 10px;
-            border-radius: 4px;
-            transition: background 0.2s;
-            line-height: 1;
-        }
-        #menuToggle:hover { background: rgba(0,0,0,0.08); }
-
-        /* Sidebar overlay backdrop (mobile only) */
-        #sidebarOverlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 40;
-        }
-        #sidebarOverlay.active { display: block; }
-
-        /* TABLET (≤1024px) */
-        @media (max-width: 1024px) {
-            .sidebar { width: 220px; }
-            .cards { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-            .product-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
-        }
-
-        /* MOBILE & SMALL TABLET (≤768px) */
-        @media (max-width: 768px) {
-            body { overflow: auto; height: auto; min-height: 100vh; flex-direction: column; }
-
-            /* Show hamburger button */
-            #menuToggle { display: inline-block; }
-
-            /* Top bar wraps on small screens */
-            .top-bar { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
-            .biz-status { flex-wrap: wrap; gap: 6px; font-size: 13px; }
-            #topBizTitle { font-size: 15px; }
-
-            /* Sidebar becomes a slide-in drawer */
-            .sidebar {
-                position: fixed;
-                left: -280px;
-                top: 0;
-                width: 260px;
-                height: 100%;
-                z-index: 45;
-                transition: left 0.3s ease;
-            }
-            .sidebar.mobile-open { left: 0; }
-
-            /* Main wrapper fills full width */
-            .main-wrapper { width: 100%; min-height: 100vh; height: auto; }
-            .main-content { padding: 10px; overflow-y: visible; }
-
-            /* Cart stacks vertically */
-            .cart-container { flex-direction: column; height: auto; }
-            .cart-panel { position: static; max-height: none; width: 100%; }
-            .product-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
-            .prod-btn img { height: 80px; }
-
-            /* Tables scroll horizontally */
-            table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
-            th, td { padding: 8px 10px; font-size: 13px; }
-
-            /* Forms wrap fully */
-            .form-group { gap: 8px; padding: 10px; }
-            input, select, textarea { min-width: 100%; flex: 1 1 100%; }
-
-            /* Cards */
-            .cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-            .card p { font-size: 16px; }
-
-            /* Modals become near full-width */
-            .modal-content { width: 96%; padding: 18px; }
-
-            /* Customer portal */
-            .customer-header { padding: 12px 14px; }
-            .customer-header h2 { font-size: 16px; }
-            #customerPortal { height: auto; min-height: 100vh; }
-        }
-
-        /* SMALL PHONES (≤480px) */
-        @media (max-width: 480px) {
-            .top-bar { padding: 8px 10px; }
-            .biz-status { gap: 5px; }
-            .btn { padding: 8px 10px; font-size: 13px; }
-            .cards { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .card p { font-size: 14px; }
-            .product-grid { grid-template-columns: repeat(2, 1fr); }
-            .main-content { padding: 8px; }
-            /* Prevent iOS from zooming in on input focus */
-            input, select, textarea { font-size: 16px !important; }
-            .modal-content { padding: 15px; }
-        }
     </style>
 </head>
 <body>
@@ -432,11 +316,8 @@
         </div>
     </div>
 
-    <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
     <div class="main-wrapper" id="adminMain">
         <div class="top-bar">
-            <button id="menuToggle" onclick="toggleSidebar()" aria-label="Fungua Menyu">&#9776;</button>
             <div style="font-size: 18px; font-weight: bold; color: var(--dark);" id="topBizTitle">Mfumo wa Biashara</div>
             <div class="biz-status">
                 <button class="btn btn-info" style="font-size: 12px; padding: 6px 10px;" onclick="copyCustomerLink()">Nenda Mfumo wa Wateja</button>
@@ -579,6 +460,13 @@
                     <div class="card" id="aggWeekBox"><h3>Wiki Hii / Iliyochaguliwa</h3><div id="aggWeekContent" class="agg-content"></div></div>
                     <div class="card" id="aggMonthBox"><h3>Mwezi Huu / Uliochaguliwa</h3><div id="aggMonthContent" class="agg-content"></div></div>
                 </div>
+
+                <h2 style="font-size: 18px; margin-top: 30px; margin-bottom: 10px; color: #2b2d42;">Bidhaa Zilizouzwa Sana (Kutoka Juu Hadi Chini)</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div class="card"><h3>Siku (Leo) / Iliyochaguliwa</h3><div id="topDayContent" class="agg-content"></div></div>
+                    <div class="card"><h3>Wiki Hii / Iliyochaguliwa</h3><div id="topWeekContent" class="agg-content"></div></div>
+                    <div class="card"><h3>Mwezi Huu / Uliochaguliwa</h3><div id="topMonthContent" class="agg-content"></div></div>
+                </div>
             </div>
         </div>
     </div>
@@ -642,8 +530,8 @@
     <div id="adminAuthModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Jopo la Admin</h2>
-            <input type="text" id="adminUser" placeholder="Username (arshad)">
-            <input type="password" id="adminPass" placeholder="Password">
+            <input type="email" id="adminUser" placeholder="Email ya Admin (Mf: admin@biashara.com)">
+            <input type="password" id="adminPass" placeholder="Password ya Admin">
             <button class="btn" onclick="verifyAdmin()">Ingia</button>
             <button class="btn" style="background:gray;" onclick="closeModals()">Ghairi</button>
         </div>
@@ -682,6 +570,7 @@
         // --- ROUTING / VIEW LOGIC ---
         const urlParams = new URLSearchParams(window.location.search);
         const isCustomerView = urlParams.get('view') === 'customer';
+        const dbNodePath = "biashara_data";
 
         if (window.Notification && Notification.permission !== "granted" && Notification.permission !== "denied") {
             Notification.requestPermission();
@@ -722,8 +611,39 @@
             if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
 
-        // --- KUANZISHA MFUMO ---
+        // --- KUANZISHA MFUMO NA FIREBASE SYNC ---
         window.onload = () => {
+            // Subscribe to Firebase RTDB for Real-time Sync
+            if (window.dbOnValue && window.dbRef && window.db) {
+                window.dbOnValue(window.dbRef(window.db, dbNodePath), (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        biz_categories = data.categories || [];
+                        biz_products = data.products || [];
+                        biz_expenses = data.expenses || [];
+                        biz_receipts = data.receipts || [];
+                        biz_summary = data.summary || [];
+                        biz_orders = data.orders || [];
+                        biz_session = data.session || { isOpen: false, startTime: null, revenue: 0, cogs: 0, expenses: 0, soldProducts: {} };
+                        if(data.user) biz_user = data.user;
+
+                        // Re-render UI upon sync
+                        if (isCustomerView) {
+                            document.getElementById('custBizTitle').innerText = (biz_user ? biz_user.bizName : "Duka Letu");
+                            renderMauzoProducts('customer');
+                            renderCustomerOrders();
+                        } else {
+                            if (biz_user) {
+                                document.getElementById('sidebarBizName').innerText = biz_user.bizName;
+                                document.getElementById('topBizTitle').innerText = `${biz_user.bizName} - Usimamizi`;
+                                updateUIState(); updateCategoryDropdown(); renderInventory(); renderMauzoProducts('admin'); 
+                                renderExpenses(); renderMuhtasari(); renderReceipts(); updateDashboard(); renderAdminOrders();
+                            }
+                        }
+                    }
+                });
+            }
+
             if(isCustomerView) {
                 document.getElementById('adminSidebar').style.display = 'none';
                 document.getElementById('adminMain').style.display = 'none';
@@ -748,7 +668,7 @@
             let hours = document.getElementById('regHours').value;
             if(!name || !bizName) return alert("Tafadhali jaza jina lako na la biashara!");
             biz_user = { name, bizName, days, hours };
-            localStorage.setItem('biz_user', JSON.stringify(biz_user));
+            saveData();
             closeModals(); initApp();
         }
 
@@ -1205,7 +1125,7 @@
             }
         }
 
-        // --- MATUMIZI & MUHTASARI WITH FILTER ---
+        // --- MATUMIZI & MUHTASARI WITH FILTER & TOP PRODUCTS ---
         function toggleAggFilterInputs() {
             let type = document.getElementById('aggFilterType').value;
             document.getElementById('aggFilterDate').style.display = type === 'date' ? 'inline-block' : 'none';
@@ -1225,11 +1145,13 @@
             let fMonth = document.getElementById('aggFilterMonth').value; 
 
             let agg = { day: { rev: 0, profit: 0, loss: 0 }, week: { rev: 0, profit: 0, loss: 0 }, month: { rev: 0, profit: 0, loss: 0 } };
+            let topDay = {}, topWeek = {}, topMonth = {}; 
 
             let todayStr = new Date().toDateString();
             let weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
             let currentMonth = new Date().getMonth(); let currentYear = new Date().getFullYear();
 
+            // Piga hesabu ya mapato na faida
             biz_summary.slice().reverse().forEach(s => {
                 let faida = s.netProfit >= 0 ? s.netProfit : 0;
                 let hasara = s.netProfit < 0 ? Math.abs(s.netProfit) : 0;
@@ -1264,6 +1186,35 @@
                 if(includeInMonth) { agg.month.rev += s.revenue; agg.month.profit += faida; agg.month.loss += hasara; }
             });
 
+            // Piga hesabu ya bidhaa zilizouzwa sana kutoka kwenye biz_receipts
+            biz_receipts.forEach(r => {
+                let rDateObj = new Date(r.date);
+                let includeInDay = false, includeInWeek = false, includeInMonth = false;
+
+                if(filterType === 'all') {
+                    if(rDateObj.toDateString() === todayStr) includeInDay = true;
+                    if(rDateObj >= weekAgo) includeInWeek = true;
+                    if(rDateObj.getMonth() === currentMonth && rDateObj.getFullYear() === currentYear) includeInMonth = true;
+                } else if(filterType === 'date' && fDate) {
+                    if(rDateObj.toISOString().split('T')[0] === fDate) { includeInDay=true; includeInWeek=true; includeInMonth=true; }
+                } else if(filterType === 'month' && fMonth) {
+                    let [yy, mm] = fMonth.split('-');
+                    if(rDateObj.getFullYear() == yy && (rDateObj.getMonth()+1) == mm) { includeInDay=true; includeInWeek=true; includeInMonth=true; }
+                } else if(filterType === 'week' && fWeek) {
+                    includeInDay=true; includeInWeek=true; includeInMonth=true; 
+                }
+
+                if(r.items) {
+                    r.items.forEach(item => {
+                        let pName = item.product.name;
+                        let qty = item.stockQtyToDeduct;
+                        if(includeInDay) topDay[pName] = (topDay[pName] || 0) + qty;
+                        if(includeInWeek) topWeek[pName] = (topWeek[pName] || 0) + qty;
+                        if(includeInMonth) topMonth[pName] = (topMonth[pName] || 0) + qty;
+                    });
+                }
+            });
+
             if(filterType === 'all' && biz_session.isOpen) {
                 let sessionNet = (biz_session.revenue - biz_session.cogs) - biz_session.expenses;
                 let sFaida = sessionNet >= 0 ? sessionNet : 0;
@@ -1271,15 +1222,38 @@
                 agg.day.rev += biz_session.revenue; agg.day.profit += sFaida; agg.day.loss += sHasara;
                 agg.week.rev += biz_session.revenue; agg.week.profit += sFaida; agg.week.loss += sHasara;
                 agg.month.rev += biz_session.revenue; agg.month.profit += sFaida; agg.month.loss += sHasara;
+
+                for(let [pName, qty] of Object.entries(biz_session.soldProducts)) {
+                    topDay[pName] = (topDay[pName] || 0) + qty;
+                    topWeek[pName] = (topWeek[pName] || 0) + qty;
+                    topMonth[pName] = (topMonth[pName] || 0) + qty;
+                }
             }
 
             document.getElementById('aggDayContent').innerHTML = `<p>Mapato: Tsh ${agg.day.rev.toLocaleString()}</p><p class="text-success">Faida: Tsh ${agg.day.profit.toLocaleString()}</p><p class="text-danger">Hasara: Tsh ${agg.day.loss.toLocaleString()}</p>`;
             document.getElementById('aggWeekContent').innerHTML = `<p>Mapato: Tsh ${agg.week.rev.toLocaleString()}</p><p class="text-success">Faida: Tsh ${agg.week.profit.toLocaleString()}</p><p class="text-danger">Hasara: Tsh ${agg.week.loss.toLocaleString()}</p>`;
             document.getElementById('aggMonthContent').innerHTML = `<p>Mapato: Tsh ${agg.month.rev.toLocaleString()}</p><p class="text-success">Faida: Tsh ${agg.month.profit.toLocaleString()}</p><p class="text-danger">Hasara: Tsh ${agg.month.loss.toLocaleString()}</p>`;
+
+            // Jaza orodha ya bidhaa zilizouzwa sana
+            function getTopListHTML(obj) {
+                let sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]);
+                if(sorted.length === 0) return "<p style='color:gray; font-size:13px;'>Hakuna mauzo</p>";
+                let html = "<ol style='padding-left:15px; margin-top:5px;'>";
+                sorted.forEach(([name, qty]) => { html += `<li style="font-size:13px; margin-bottom:3px;">${name}: <strong>${qty}</strong></li>`; });
+                html += "</ol>";
+                return html;
+            }
+
+            if(document.getElementById('topDayContent')) {
+                document.getElementById('topDayContent').innerHTML = getTopListHTML(topDay);
+                document.getElementById('topWeekContent').innerHTML = getTopListHTML(topWeek);
+                document.getElementById('topMonthContent').innerHTML = getTopListHTML(topMonth);
+            }
         }
 
-        // Storage and Admin Utils
+        // --- Storage and Admin Utils ---
         function saveData() {
+            // Local Storage backup
             localStorage.setItem('biz_categories', JSON.stringify(biz_categories));
             localStorage.setItem('biz_products', JSON.stringify(biz_products));
             localStorage.setItem('biz_expenses', JSON.stringify(biz_expenses));
@@ -1287,6 +1261,21 @@
             localStorage.setItem('biz_summary', JSON.stringify(biz_summary));
             localStorage.setItem('biz_session', JSON.stringify(biz_session));
             localStorage.setItem('biz_orders', JSON.stringify(biz_orders));
+            if (biz_user) localStorage.setItem('biz_user', JSON.stringify(biz_user));
+
+            // Push to Firebase for Customer/Cross-device Sync
+            if (window.dbSet && window.dbRef && window.db) {
+                window.dbSet(window.dbRef(window.db, dbNodePath), {
+                    categories: biz_categories,
+                    products: biz_products,
+                    expenses: biz_expenses,
+                    receipts: biz_receipts,
+                    summary: biz_summary,
+                    session: biz_session,
+                    orders: biz_orders,
+                    user: biz_user || null
+                }).catch(e => console.error("Firebase Sync Error: ", e));
+            }
         }
 
         function addExpense() {
@@ -1397,124 +1386,42 @@
             document.getElementById('adminWhatsapp').value = localStorage.getItem('biz_whatsapp') || ''; 
             document.getElementById('adminConfirmMsg').value = localStorage.getItem('biz_confirm_msg') || "Oda imethibitishwa! Tafadhali fika dukani au lipia kupitia namba: {waAdmin} ili uletewe mzigo.";
         }
-        function verifyAdmin() { let u = document.getElementById('adminUser').value; let p = document.getElementById('adminPass').value; if(u === 'arshad' && p === 'daproo16') { closeModals(); document.getElementById('adminDashboardModal').classList.add('active'); document.getElementById('adminUser').value = ''; document.getElementById('adminPass').value = ''; document.getElementById('adminSetUserPass').value = localStorage.getItem('biz_user_pass') || ''; } else { alert("Taarifa si sahihi!"); } }
+
+        function verifyAdmin() { 
+            let email = document.getElementById('adminUser').value; 
+            let p = document.getElementById('adminPass').value; 
+            
+            if (window.signInWithEmailAndPassword && window.auth) {
+                window.signInWithEmailAndPassword(window.auth, email, p)
+                    .then((userCredential) => {
+                        closeModals(); 
+                        document.getElementById('adminDashboardModal').classList.add('active'); 
+                        document.getElementById('adminUser').value = ''; 
+                        document.getElementById('adminPass').value = ''; 
+                        document.getElementById('adminSetUserPass').value = localStorage.getItem('biz_user_pass') || ''; 
+                    })
+                    .catch((error) => {
+                        alert("Kosa: Taarifa si sahihi au mtumiaji hajasajiliwa kwenye Firebase Auth.");
+                    });
+            } else {
+                // Fallback (Endapo module ya Firebase inachelewa ku-load)
+                if(email === 'arshad' && p === 'daproo16') { 
+                    closeModals(); document.getElementById('adminDashboardModal').classList.add('active'); 
+                } else { alert("Taarifa si sahihi!"); }
+            }
+        }
+
         function saveWhatsapp() { let wa = document.getElementById('adminWhatsapp').value; if(wa) { wa = wa.replace(/[^0-9]/g, ''); localStorage.setItem('biz_whatsapp', wa); alert("Namba ya WhatsApp imehifadhiwa!"); } else { localStorage.removeItem('biz_whatsapp'); alert("Namba ya WhatsApp imeondolewa."); } }
         function saveConfirmMessage() { let msg = document.getElementById('adminConfirmMsg').value; if(msg) { localStorage.setItem('biz_confirm_msg', msg); alert("Ujumbe umehifadhiwa kikamilifu!"); } else { localStorage.removeItem('biz_confirm_msg'); alert("Ujumbe umerudishwa kwenye default."); } }
         function setUserPassword() { let pass = document.getElementById('adminSetUserPass').value; if(pass) { localStorage.setItem('biz_user_pass', pass); alert("Nywila imewekwa kikamilifu!"); } else { localStorage.removeItem('biz_user_pass'); alert("Nywila imeondolewa. Mfumo upo wazi."); } }
         function openEditRegistration() { closeModals(); document.getElementById('setupModal').classList.add('active'); }
-        function factoryReset() { if(confirm("ONYO KUBWA: Hii itafuta bidhaa zote, mauzo, na taarifa zote za mfumo. Kuendelea?")) { localStorage.clear(); location.reload(); } }
-
-        /* ── RESPONSIVE SIDEBAR TOGGLE (ADDED ONLY) ── */
-        function toggleSidebar() {
-            document.getElementById('adminSidebar').classList.toggle('mobile-open');
-            document.getElementById('sidebarOverlay').classList.toggle('active');
+        function factoryReset() { 
+            if(confirm("ONYO KUBWA: Hii itafuta bidhaa zote, mauzo, na taarifa zote za mfumo. Kuendelea?")) { 
+                localStorage.clear(); 
+                if(window.dbSet && window.dbRef && window.db) { window.dbSet(window.dbRef(window.db, dbNodePath), null); }
+                location.reload(); 
+            } 
         }
-        // Auto-close sidebar when a nav item is tapped on mobile
-        document.querySelectorAll('.nav-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    document.getElementById('adminSidebar').classList.remove('mobile-open');
-                    document.getElementById('sidebarOverlay').classList.remove('active');
-                }
-            });
-        });
-    </script>
-
-    <script>
-        /* ══════════════════════════════════════════════════════════════
-           FIREBASE FIRESTORE SYNC LAYER  (modular SDK via window._fbFirestore)
-           getFirebaseKey()   — unique device/business key (localStorage)
-           syncToFirebase()   — saves all data to Firestore on every saveData()
-           loadFromFirebase() — pulls Firestore data before app starts
-           Product images stay in localStorage only (base64 would exceed 1 MB limit)
-           ══════════════════════════════════════════════════════════════ */
-
-        function getFirebaseKey() {
-            var key = localStorage.getItem('biz_firebase_key');
-            if (!key) {
-                key = 'biz_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-                localStorage.setItem('biz_firebase_key', key);
-            }
-            return key;
-        }
-
-        async function syncToFirebase() {
-            if (!window._fbdb || !window._fbFirestore || !biz_user) return;
-            try {
-                var bizKey = getFirebaseKey();
-                var _doc = window._fbFirestore.doc;
-                var _setDoc = window._fbFirestore.setDoc;
-                var productsNoImg = biz_products.map(function(p) {
-                    var copy = Object.assign({}, p); delete copy.image; return copy;
-                });
-                await _setDoc(_doc(window._fbdb, 'businesses', bizKey), {
-                    biz_user:       biz_user,
-                    biz_categories: biz_categories,
-                    biz_products:   productsNoImg,
-                    biz_expenses:   biz_expenses,
-                    biz_receipts:   biz_receipts.slice(-200),
-                    biz_summary:    biz_summary.slice(-365),
-                    biz_session:    biz_session,
-                    biz_orders:     biz_orders,
-                    lastUpdated:    new Date().toISOString()
-                });
-            } catch(e) {
-                console.warn('Firebase sync error — check Firestore Rules in Firebase Console:', e);
-            }
-        }
-
-        async function loadFromFirebase() {
-            if (!window._fbdb || !window._fbFirestore) return;
-            try {
-                var bizKey = getFirebaseKey();
-                var _doc    = window._fbFirestore.doc;
-                var _getDoc = window._fbFirestore.getDoc;
-                var snap = await _getDoc(_doc(window._fbdb, 'businesses', bizKey));
-                if (!snap.exists()) return;            // modular API: exists() is a function
-                var d = snap.data();
-                var localProds = JSON.parse(localStorage.getItem('biz_products')) || [];
-                if (d.biz_user)       localStorage.setItem('biz_user',       JSON.stringify(d.biz_user));
-                if (d.biz_categories) localStorage.setItem('biz_categories', JSON.stringify(d.biz_categories));
-                if (d.biz_products) {
-                    var merged = d.biz_products.map(function(fp) {
-                        var lp = localProds.find(function(p) { return p.id === fp.id; });
-                        return lp ? Object.assign({}, fp, { image: lp.image }) : fp;
-                    });
-                    localStorage.setItem('biz_products', JSON.stringify(merged));
-                }
-                if (d.biz_expenses) localStorage.setItem('biz_expenses', JSON.stringify(d.biz_expenses));
-                if (d.biz_receipts) localStorage.setItem('biz_receipts', JSON.stringify(d.biz_receipts));
-                if (d.biz_summary)  localStorage.setItem('biz_summary',  JSON.stringify(d.biz_summary));
-                if (d.biz_session)  localStorage.setItem('biz_session',  JSON.stringify(d.biz_session));
-                if (d.biz_orders)   localStorage.setItem('biz_orders',   JSON.stringify(d.biz_orders));
-                // Refresh all in-memory variables so the app sees the latest Firebase data
-                biz_user       = JSON.parse(localStorage.getItem('biz_user'))       || null;
-                biz_categories = JSON.parse(localStorage.getItem('biz_categories')) || [];
-                biz_products   = JSON.parse(localStorage.getItem('biz_products'))   || [];
-                biz_expenses   = JSON.parse(localStorage.getItem('biz_expenses'))   || [];
-                biz_receipts   = JSON.parse(localStorage.getItem('biz_receipts'))   || [];
-                biz_summary    = JSON.parse(localStorage.getItem('biz_summary'))    || [];
-                biz_orders     = JSON.parse(localStorage.getItem('biz_orders'))     || [];
-                biz_session    = JSON.parse(localStorage.getItem('biz_session'))    || { isOpen: false, startTime: null, revenue: 0, cogs: 0, expenses: 0, soldProducts: {} };
-            } catch(e) {
-                console.warn('Firebase load error — check Firestore Rules in Firebase Console:', e);
-            }
-        }
-
-        // Hook saveData() — every local save also syncs to Firestore automatically
-        var _origSaveData = saveData;
-        saveData = function() {
-            _origSaveData();
-            syncToFirebase();
-        };
-
-        // Hook window.onload — fetch Firestore data BEFORE the app initialises
-        // Module scripts (firebase-ready) run before window.onload, so _fbFirestore is ready
-        var _origOnload = window.onload;
-        window.onload = async function() {
-            await loadFromFirebase();
-            if (_origOnload) _origOnload();
-        };
     </script>
 </body>
 </html>
