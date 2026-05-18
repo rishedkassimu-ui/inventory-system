@@ -5,30 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mfumo wa Biashara</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        
-        const firebaseConfig = {
-          apiKey: "AIzaSyC993dQblmxWffnx_VrBX_t3u3VOuC_2uQ",
-          authDomain: "inventory-system-3292e.firebaseapp.com",
-          projectId: "inventory-system-3292e",
-          storageBucket: "inventory-system-3292e.firebasestorage.app",
-          messagingSenderId: "508771625396",
-          appId: "1:508771625396:web:bad17918ea86a2aee26ae1"
-        };
-        
-        const app = initializeApp(firebaseConfig);
-        
-        // Expose Firebase tools to global window object for the main script to use
-        window.db = getDatabase(app);
-        window.dbRef = ref;
-        window.dbSet = set;
-        window.dbOnValue = onValue;
-        window.auth = getAuth(app);
-        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-    </script>
     <style>
         :root {
             --primary: #4361ee;
@@ -460,13 +436,6 @@
                     <div class="card" id="aggWeekBox"><h3>Wiki Hii / Iliyochaguliwa</h3><div id="aggWeekContent" class="agg-content"></div></div>
                     <div class="card" id="aggMonthBox"><h3>Mwezi Huu / Uliochaguliwa</h3><div id="aggMonthContent" class="agg-content"></div></div>
                 </div>
-
-                <h2 style="font-size: 18px; margin-top: 30px; margin-bottom: 10px; color: #2b2d42;">Bidhaa Zilizouzwa Sana (Kutoka Juu Hadi Chini)</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <div class="card"><h3>Siku (Leo) / Iliyochaguliwa</h3><div id="topDayContent" class="agg-content"></div></div>
-                    <div class="card"><h3>Wiki Hii / Iliyochaguliwa</h3><div id="topWeekContent" class="agg-content"></div></div>
-                    <div class="card"><h3>Mwezi Huu / Uliochaguliwa</h3><div id="topMonthContent" class="agg-content"></div></div>
-                </div>
             </div>
         </div>
     </div>
@@ -530,8 +499,8 @@
     <div id="adminAuthModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Jopo la Admin</h2>
-            <input type="email" id="adminUser" placeholder="Email ya Admin (Mf: admin@biashara.com)">
-            <input type="password" id="adminPass" placeholder="Password ya Admin">
+            <input type="text" id="adminUser" placeholder="Username (arshad)">
+            <input type="password" id="adminPass" placeholder="Password">
             <button class="btn" onclick="verifyAdmin()">Ingia</button>
             <button class="btn" style="background:gray;" onclick="closeModals()">Ghairi</button>
         </div>
@@ -570,7 +539,6 @@
         // --- ROUTING / VIEW LOGIC ---
         const urlParams = new URLSearchParams(window.location.search);
         const isCustomerView = urlParams.get('view') === 'customer';
-        const dbNodePath = "biashara_data";
 
         if (window.Notification && Notification.permission !== "granted" && Notification.permission !== "denied") {
             Notification.requestPermission();
@@ -611,39 +579,8 @@
             if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
 
-        // --- KUANZISHA MFUMO NA FIREBASE SYNC ---
+        // --- KUANZISHA MFUMO ---
         window.onload = () => {
-            // Subscribe to Firebase RTDB for Real-time Sync
-            if (window.dbOnValue && window.dbRef && window.db) {
-                window.dbOnValue(window.dbRef(window.db, dbNodePath), (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        biz_categories = data.categories || [];
-                        biz_products = data.products || [];
-                        biz_expenses = data.expenses || [];
-                        biz_receipts = data.receipts || [];
-                        biz_summary = data.summary || [];
-                        biz_orders = data.orders || [];
-                        biz_session = data.session || { isOpen: false, startTime: null, revenue: 0, cogs: 0, expenses: 0, soldProducts: {} };
-                        if(data.user) biz_user = data.user;
-
-                        // Re-render UI upon sync
-                        if (isCustomerView) {
-                            document.getElementById('custBizTitle').innerText = (biz_user ? biz_user.bizName : "Duka Letu");
-                            renderMauzoProducts('customer');
-                            renderCustomerOrders();
-                        } else {
-                            if (biz_user) {
-                                document.getElementById('sidebarBizName').innerText = biz_user.bizName;
-                                document.getElementById('topBizTitle').innerText = `${biz_user.bizName} - Usimamizi`;
-                                updateUIState(); updateCategoryDropdown(); renderInventory(); renderMauzoProducts('admin'); 
-                                renderExpenses(); renderMuhtasari(); renderReceipts(); updateDashboard(); renderAdminOrders();
-                            }
-                        }
-                    }
-                });
-            }
-
             if(isCustomerView) {
                 document.getElementById('adminSidebar').style.display = 'none';
                 document.getElementById('adminMain').style.display = 'none';
@@ -668,7 +605,7 @@
             let hours = document.getElementById('regHours').value;
             if(!name || !bizName) return alert("Tafadhali jaza jina lako na la biashara!");
             biz_user = { name, bizName, days, hours };
-            saveData();
+            localStorage.setItem('biz_user', JSON.stringify(biz_user));
             closeModals(); initApp();
         }
 
@@ -1125,7 +1062,7 @@
             }
         }
 
-        // --- MATUMIZI & MUHTASARI WITH FILTER & TOP PRODUCTS ---
+        // --- MATUMIZI & MUHTASARI WITH FILTER ---
         function toggleAggFilterInputs() {
             let type = document.getElementById('aggFilterType').value;
             document.getElementById('aggFilterDate').style.display = type === 'date' ? 'inline-block' : 'none';
@@ -1145,13 +1082,11 @@
             let fMonth = document.getElementById('aggFilterMonth').value; 
 
             let agg = { day: { rev: 0, profit: 0, loss: 0 }, week: { rev: 0, profit: 0, loss: 0 }, month: { rev: 0, profit: 0, loss: 0 } };
-            let topDay = {}, topWeek = {}, topMonth = {}; 
 
             let todayStr = new Date().toDateString();
             let weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
             let currentMonth = new Date().getMonth(); let currentYear = new Date().getFullYear();
 
-            // Piga hesabu ya mapato na faida
             biz_summary.slice().reverse().forEach(s => {
                 let faida = s.netProfit >= 0 ? s.netProfit : 0;
                 let hasara = s.netProfit < 0 ? Math.abs(s.netProfit) : 0;
@@ -1186,35 +1121,6 @@
                 if(includeInMonth) { agg.month.rev += s.revenue; agg.month.profit += faida; agg.month.loss += hasara; }
             });
 
-            // Piga hesabu ya bidhaa zilizouzwa sana kutoka kwenye biz_receipts
-            biz_receipts.forEach(r => {
-                let rDateObj = new Date(r.date);
-                let includeInDay = false, includeInWeek = false, includeInMonth = false;
-
-                if(filterType === 'all') {
-                    if(rDateObj.toDateString() === todayStr) includeInDay = true;
-                    if(rDateObj >= weekAgo) includeInWeek = true;
-                    if(rDateObj.getMonth() === currentMonth && rDateObj.getFullYear() === currentYear) includeInMonth = true;
-                } else if(filterType === 'date' && fDate) {
-                    if(rDateObj.toISOString().split('T')[0] === fDate) { includeInDay=true; includeInWeek=true; includeInMonth=true; }
-                } else if(filterType === 'month' && fMonth) {
-                    let [yy, mm] = fMonth.split('-');
-                    if(rDateObj.getFullYear() == yy && (rDateObj.getMonth()+1) == mm) { includeInDay=true; includeInWeek=true; includeInMonth=true; }
-                } else if(filterType === 'week' && fWeek) {
-                    includeInDay=true; includeInWeek=true; includeInMonth=true; 
-                }
-
-                if(r.items) {
-                    r.items.forEach(item => {
-                        let pName = item.product.name;
-                        let qty = item.stockQtyToDeduct;
-                        if(includeInDay) topDay[pName] = (topDay[pName] || 0) + qty;
-                        if(includeInWeek) topWeek[pName] = (topWeek[pName] || 0) + qty;
-                        if(includeInMonth) topMonth[pName] = (topMonth[pName] || 0) + qty;
-                    });
-                }
-            });
-
             if(filterType === 'all' && biz_session.isOpen) {
                 let sessionNet = (biz_session.revenue - biz_session.cogs) - biz_session.expenses;
                 let sFaida = sessionNet >= 0 ? sessionNet : 0;
@@ -1222,38 +1128,15 @@
                 agg.day.rev += biz_session.revenue; agg.day.profit += sFaida; agg.day.loss += sHasara;
                 agg.week.rev += biz_session.revenue; agg.week.profit += sFaida; agg.week.loss += sHasara;
                 agg.month.rev += biz_session.revenue; agg.month.profit += sFaida; agg.month.loss += sHasara;
-
-                for(let [pName, qty] of Object.entries(biz_session.soldProducts)) {
-                    topDay[pName] = (topDay[pName] || 0) + qty;
-                    topWeek[pName] = (topWeek[pName] || 0) + qty;
-                    topMonth[pName] = (topMonth[pName] || 0) + qty;
-                }
             }
 
             document.getElementById('aggDayContent').innerHTML = `<p>Mapato: Tsh ${agg.day.rev.toLocaleString()}</p><p class="text-success">Faida: Tsh ${agg.day.profit.toLocaleString()}</p><p class="text-danger">Hasara: Tsh ${agg.day.loss.toLocaleString()}</p>`;
             document.getElementById('aggWeekContent').innerHTML = `<p>Mapato: Tsh ${agg.week.rev.toLocaleString()}</p><p class="text-success">Faida: Tsh ${agg.week.profit.toLocaleString()}</p><p class="text-danger">Hasara: Tsh ${agg.week.loss.toLocaleString()}</p>`;
             document.getElementById('aggMonthContent').innerHTML = `<p>Mapato: Tsh ${agg.month.rev.toLocaleString()}</p><p class="text-success">Faida: Tsh ${agg.month.profit.toLocaleString()}</p><p class="text-danger">Hasara: Tsh ${agg.month.loss.toLocaleString()}</p>`;
-
-            // Jaza orodha ya bidhaa zilizouzwa sana
-            function getTopListHTML(obj) {
-                let sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]);
-                if(sorted.length === 0) return "<p style='color:gray; font-size:13px;'>Hakuna mauzo</p>";
-                let html = "<ol style='padding-left:15px; margin-top:5px;'>";
-                sorted.forEach(([name, qty]) => { html += `<li style="font-size:13px; margin-bottom:3px;">${name}: <strong>${qty}</strong></li>`; });
-                html += "</ol>";
-                return html;
-            }
-
-            if(document.getElementById('topDayContent')) {
-                document.getElementById('topDayContent').innerHTML = getTopListHTML(topDay);
-                document.getElementById('topWeekContent').innerHTML = getTopListHTML(topWeek);
-                document.getElementById('topMonthContent').innerHTML = getTopListHTML(topMonth);
-            }
         }
 
-        // --- Storage and Admin Utils ---
+        // Storage and Admin Utils
         function saveData() {
-            // Local Storage backup
             localStorage.setItem('biz_categories', JSON.stringify(biz_categories));
             localStorage.setItem('biz_products', JSON.stringify(biz_products));
             localStorage.setItem('biz_expenses', JSON.stringify(biz_expenses));
@@ -1261,21 +1144,6 @@
             localStorage.setItem('biz_summary', JSON.stringify(biz_summary));
             localStorage.setItem('biz_session', JSON.stringify(biz_session));
             localStorage.setItem('biz_orders', JSON.stringify(biz_orders));
-            if (biz_user) localStorage.setItem('biz_user', JSON.stringify(biz_user));
-
-            // Push to Firebase for Customer/Cross-device Sync
-            if (window.dbSet && window.dbRef && window.db) {
-                window.dbSet(window.dbRef(window.db, dbNodePath), {
-                    categories: biz_categories,
-                    products: biz_products,
-                    expenses: biz_expenses,
-                    receipts: biz_receipts,
-                    summary: biz_summary,
-                    session: biz_session,
-                    orders: biz_orders,
-                    user: biz_user || null
-                }).catch(e => console.error("Firebase Sync Error: ", e));
-            }
         }
 
         function addExpense() {
@@ -1386,42 +1254,12 @@
             document.getElementById('adminWhatsapp').value = localStorage.getItem('biz_whatsapp') || ''; 
             document.getElementById('adminConfirmMsg').value = localStorage.getItem('biz_confirm_msg') || "Oda imethibitishwa! Tafadhali fika dukani au lipia kupitia namba: {waAdmin} ili uletewe mzigo.";
         }
-
-        function verifyAdmin() { 
-            let email = document.getElementById('adminUser').value; 
-            let p = document.getElementById('adminPass').value; 
-            
-            if (window.signInWithEmailAndPassword && window.auth) {
-                window.signInWithEmailAndPassword(window.auth, email, p)
-                    .then((userCredential) => {
-                        closeModals(); 
-                        document.getElementById('adminDashboardModal').classList.add('active'); 
-                        document.getElementById('adminUser').value = ''; 
-                        document.getElementById('adminPass').value = ''; 
-                        document.getElementById('adminSetUserPass').value = localStorage.getItem('biz_user_pass') || ''; 
-                    })
-                    .catch((error) => {
-                        alert("Kosa: Taarifa si sahihi au mtumiaji hajasajiliwa kwenye Firebase Auth.");
-                    });
-            } else {
-                // Fallback (Endapo module ya Firebase inachelewa ku-load)
-                if(email === 'arshad' && p === 'daproo16') { 
-                    closeModals(); document.getElementById('adminDashboardModal').classList.add('active'); 
-                } else { alert("Taarifa si sahihi!"); }
-            }
-        }
-
+        function verifyAdmin() { let u = document.getElementById('adminUser').value; let p = document.getElementById('adminPass').value; if(u === 'arshad' && p === 'daproo16') { closeModals(); document.getElementById('adminDashboardModal').classList.add('active'); document.getElementById('adminUser').value = ''; document.getElementById('adminPass').value = ''; document.getElementById('adminSetUserPass').value = localStorage.getItem('biz_user_pass') || ''; } else { alert("Taarifa si sahihi!"); } }
         function saveWhatsapp() { let wa = document.getElementById('adminWhatsapp').value; if(wa) { wa = wa.replace(/[^0-9]/g, ''); localStorage.setItem('biz_whatsapp', wa); alert("Namba ya WhatsApp imehifadhiwa!"); } else { localStorage.removeItem('biz_whatsapp'); alert("Namba ya WhatsApp imeondolewa."); } }
         function saveConfirmMessage() { let msg = document.getElementById('adminConfirmMsg').value; if(msg) { localStorage.setItem('biz_confirm_msg', msg); alert("Ujumbe umehifadhiwa kikamilifu!"); } else { localStorage.removeItem('biz_confirm_msg'); alert("Ujumbe umerudishwa kwenye default."); } }
         function setUserPassword() { let pass = document.getElementById('adminSetUserPass').value; if(pass) { localStorage.setItem('biz_user_pass', pass); alert("Nywila imewekwa kikamilifu!"); } else { localStorage.removeItem('biz_user_pass'); alert("Nywila imeondolewa. Mfumo upo wazi."); } }
         function openEditRegistration() { closeModals(); document.getElementById('setupModal').classList.add('active'); }
-        function factoryReset() { 
-            if(confirm("ONYO KUBWA: Hii itafuta bidhaa zote, mauzo, na taarifa zote za mfumo. Kuendelea?")) { 
-                localStorage.clear(); 
-                if(window.dbSet && window.dbRef && window.db) { window.dbSet(window.dbRef(window.db, dbNodePath), null); }
-                location.reload(); 
-            } 
-        }
+        function factoryReset() { if(confirm("ONYO KUBWA: Hii itafuta bidhaa zote, mauzo, na taarifa zote za mfumo. Kuendelea?")) { localStorage.clear(); location.reload(); } }
     </script>
 </body>
 </html>
