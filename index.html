@@ -298,6 +298,11 @@
         <div class="top-bar">
             <div style="font-size: 18px; font-weight: bold; color: var(--dark);" id="topBizTitle">Mfumo wa Biashara</div>
             <div class="biz-status" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <!-- Firebase live status badge -->
+                <div id="fbStatusBadge" onclick="forceSyncToFirebase()" title="Bonyeza kusync" style="display:inline-flex;align-items:center;gap:5px;background:#f39c12;color:#fff;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;user-select:none;">
+                    <div style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.8);flex-shrink:0;"></div>
+                    <span>Firebase: Inaunganisha...</span>
+                </div>
                 <button class="btn btn-info" style="font-size: 12px; padding: 6px 10px;" onclick="copyCustomerLink()">Nenda Mfumo wa Wateja</button>
                 Hali ya Siku: <span id="statusIndicator" class="status-badge bg-danger">IMEFUNGWA</span>
                 <button class="btn" id="btnToggleBiz" onclick="toggleBusiness()">Fungua Biashara</button>
@@ -593,13 +598,32 @@
         };
 
         let useFirebase = false;
+
+        function _setFbBadge(state, msg) {
+            var badge = document.getElementById('fbStatusBadge');
+            if (!badge) return;
+            var colors = { ok: '#2ecc71', error: '#e74c3c', connecting: '#f39c12' };
+            badge.style.background = colors[state] || '#aaa';
+            badge.title = msg;
+            badge.querySelector('span').innerText = msg;
+        }
+
         try {
             var _fbApp = (firebase.apps && firebase.apps.length > 0)
                 ? firebase.apps[0]
                 : firebase.initializeApp(firebaseConfig);
             useFirebase = true;
+            // Live connection watcher — updates badge in real time
+            firebase.database().ref('.info/connected').on('value', function(snap) {
+                if (snap.val() === true) {
+                    _setFbBadge('ok', 'Firebase: Imeunganishwa');
+                } else {
+                    _setFbBadge('connecting', 'Firebase: Inaunganisha...');
+                }
+            });
         } catch(e) {
             useFirebase = false;
+            _setFbBadge('error', 'Firebase: Hitilafu — ' + (e.code || e.message || 'Angalia Rules'));
         }
 
         // --- ROUTING / VIEW LOGIC ---
@@ -705,8 +729,6 @@
             renderReceipts();
             updateUIState();
             updateDashboard();
-            // Silent background sync to Firebase on every page load
-            setTimeout(_autoSyncOnLoad, 2000);
         }
 
         function switchTab(tabId) {
@@ -1919,17 +1941,31 @@
         }
 
         // --- GENERAL MANAGEMENT UTILS ---
-        // Silent auto-sync — runs once on page load to push all data to Firebase
-        function _autoSyncOnLoad() {
-            if (!useFirebase || !bizId) return;
-            firebase.database().ref('businesses/' + bizId).update({
+        // Force-push ALL local data to Firebase in one tap
+        function forceSyncToFirebase() {
+            if (!useFirebase || !bizId) {
+                alert('Firebase haijaunganishwa bado. Angalia Rules katika Firebase Console kisha jaribu tena.');
+                return;
+            }
+            var badge = document.getElementById('fbStatusBadge');
+            if (badge) { badge.style.background = '#f39c12'; badge.querySelector('span').innerText = 'Inasync...'; }
+            var payload = {
                 products: biz_products,
                 orders:   biz_orders,
                 settings: {
                     whatsapp:   localStorage.getItem('biz_whatsapp')    || '',
                     confirmMsg: localStorage.getItem('biz_confirm_msg') || ''
                 }
-            });
+            };
+            firebase.database().ref('businesses/' + bizId).update(payload)
+                .then(function() {
+                    if (badge) { badge.style.background = '#2ecc71'; badge.querySelector('span').innerText = 'Firebase: Imeunganishwa'; }
+                    alert('Sync imefanikiwa! Wateja sasa wanaweza kuona bidhaa na kutuma oda.');
+                })
+                .catch(function(err) {
+                    if (badge) { badge.style.background = '#e74c3c'; badge.querySelector('span').innerText = 'Firebase: Hitilafu ya Rules'; }
+                    alert('Sync imeshindwa. Nenda Firebase Console → Realtime Database → Rules, badilisha kuwa:\n\n{\n  "rules": {\n    ".read": true,\n    ".write": true\n  }\n}\n\nKisha bonyeza Publish na ujaribu tena.');
+                });
         }
 
         function saveData() {
