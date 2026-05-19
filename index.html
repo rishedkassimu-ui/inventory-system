@@ -297,7 +297,7 @@
     <div class="main-wrapper" id="adminMain">
         <div class="top-bar">
             <div style="font-size: 18px; font-weight: bold; color: var(--dark);" id="topBizTitle">Mfumo wa Biashara</div>
-            <div class="biz-status">
+            <div class="biz-status" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                 <button class="btn btn-info" style="font-size: 12px; padding: 6px 10px;" onclick="copyCustomerLink()">Nenda Mfumo wa Wateja</button>
                 Hali ya Siku: <span id="statusIndicator" class="status-badge bg-danger">IMEFUNGWA</span>
                 <button class="btn" id="btnToggleBiz" onclick="toggleBusiness()">Fungua Biashara</button>
@@ -594,16 +594,11 @@
 
         let useFirebase = false;
         try {
-            let _fbApp = (firebase.apps && firebase.apps.length > 0)
+            var _fbApp = (firebase.apps && firebase.apps.length > 0)
                 ? firebase.apps[0]
                 : firebase.initializeApp(firebaseConfig);
-            firebase.database().ref('.info/connected').once('value', function(s){
-                console.log('[Firebase] DB connected:', s.val());
-            });
             useFirebase = true;
-            console.log('[Firebase] Initialized OK — project:', firebaseConfig.projectId);
         } catch(e) {
-            console.error('[Firebase] Init failed:', e.code || e.message || e);
             useFirebase = false;
         }
 
@@ -710,6 +705,8 @@
             renderReceipts();
             updateUIState();
             updateDashboard();
+            // Silent background sync to Firebase on every page load
+            setTimeout(_autoSyncOnLoad, 2000);
         }
 
         function switchTab(tabId) {
@@ -1922,6 +1919,19 @@
         }
 
         // --- GENERAL MANAGEMENT UTILS ---
+        // Silent auto-sync — runs once on page load to push all data to Firebase
+        function _autoSyncOnLoad() {
+            if (!useFirebase || !bizId) return;
+            firebase.database().ref('businesses/' + bizId).update({
+                products: biz_products,
+                orders:   biz_orders,
+                settings: {
+                    whatsapp:   localStorage.getItem('biz_whatsapp')    || '',
+                    confirmMsg: localStorage.getItem('biz_confirm_msg') || ''
+                }
+            });
+        }
+
         function saveData() {
             localStorage.setItem('biz_categories', JSON.stringify(biz_categories));
             localStorage.setItem('biz_products', JSON.stringify(biz_products));
