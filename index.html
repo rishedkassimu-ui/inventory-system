@@ -594,11 +594,18 @@
 
         let useFirebase = false;
         try {
-            if (firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("YOUR_PROJECT_ID")) {
-                firebase.initializeApp(firebaseConfig);
-                useFirebase = true;
-            }
-        } catch(e) { console.log("Firebase initiation bypassed or offline mode used."); }
+            let _fbApp = (firebase.apps && firebase.apps.length > 0)
+                ? firebase.apps[0]
+                : firebase.initializeApp(firebaseConfig);
+            firebase.database().ref('.info/connected').once('value', function(s){
+                console.log('[Firebase] DB connected:', s.val());
+            });
+            useFirebase = true;
+            console.log('[Firebase] Initialized OK — project:', firebaseConfig.projectId);
+        } catch(e) {
+            console.error('[Firebase] Init failed:', e.code || e.message || e);
+            useFirebase = false;
+        }
 
         // --- ROUTING / VIEW LOGIC ---
         const urlParams = new URLSearchParams(window.location.search);
