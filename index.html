@@ -920,20 +920,29 @@
             if(viewType === 'customer') {
                 let list = document.getElementById('customerProductList'); if(!list) return;
                 list.innerHTML = '';
-                biz_categories.forEach(cat => {
-                    let prods = biz_products.filter(p => p.category === cat);
+                if(!biz_products || biz_products.length === 0) {
+                    list.innerHTML = '<p style="color:gray;text-align:center;padding:40px 20px;font-size:14px;">Bidhaa zinapakuliwa... tafadhali subiri.</p>';
+                    return;
+                }
+                // Derive categories directly from products — works on any device without localStorage
+                let cats = [...new Set(biz_products.map(p => p.category || 'Nyingine'))];
+                cats.forEach(cat => {
+                    let prods = biz_products.filter(p => (p.category || 'Nyingine') === cat && p.stock > 0);
                     if(prods.length > 0) {
                         list.innerHTML += `<div class="cat-header">${cat}</div>`;
                         prods.forEach(p => {
                             let unitLabel = p.unit === 'idadi' ? '' : `/${p.unit.charAt(0).toUpperCase() + p.unit.slice(1)}`;
                             let priceLabel = `Tsh ${p.price}${unitLabel}`;
-                            let imgTag = p.image ? `<img src="${p.image}">` : `<div style="width:100%; height:100px; background:#ddd; border-radius:6px; margin-bottom:5px; display:flex; align-items:center; justify-content:center; color:gray; font-weight:bold; font-size:12px;">No Image</div>`;
+                            let imgTag = p.image ? `<img src="${p.image}">` : `<div style="width:100%;height:100px;background:#ddd;border-radius:6px;margin-bottom:5px;display:flex;align-items:center;justify-content:center;color:gray;font-weight:bold;font-size:12px;">Picha Haipatikani</div>`;
                             list.innerHTML += `<div class="prod-btn" onclick="openQtyModal(${p.id}, true)">
                                 ${imgTag}<strong>${p.name}</strong><span class="text-success">${priceLabel}</span>
                             </div>`;
                         });
                     }
                 });
+                if(list.innerHTML === '') {
+                    list.innerHTML = '<p style="color:gray;text-align:center;padding:40px 20px;font-size:14px;">Hakuna bidhaa zinazopatikana kwa sasa.</p>';
+                }
             } else { filterMauzoProducts(); }
         }
 
@@ -1680,13 +1689,16 @@
 
         // --- CUSTOMER PORTAL REALTIME ENGINE ---
         function initCustomerApp() {
-            // Set business name from URL or localStorage
             document.getElementById('custBizTitle').innerText = (biz_user ? biz_user.bizName : "Duka Letu");
 
-            // If Firebase is available, fetch products and orders live from Firebase using the bizId in the URL
             if (useFirebase && bizId) {
-                // Live product list for customer — ensures customer sees current stock even from another device
-                firebase.database().ref('businesses/' + bizId + '/products').on('value', (snapshot) => {
+                // Load categories first, then products
+                firebase.database().ref('businesses/' + bizId + '/categories').once('value', function(catSnap) {
+                    let catVal = catSnap.val();
+                    if (catVal) biz_categories = Array.isArray(catVal) ? catVal : Object.values(catVal);
+                });
+
+                firebase.database().ref('businesses/' + bizId + '/products').on('value', function(snapshot) {
                     let val = snapshot.val();
                     if (val) {
                         biz_products = Array.isArray(val) ? val : Object.values(val);
@@ -1696,8 +1708,7 @@
                     }
                 });
 
-                // Live order status updates for customer — order status changes by admin reflect instantly
-                firebase.database().ref('businesses/' + bizId + '/orders').on('value', (snapshot) => {
+                firebase.database().ref('businesses/' + bizId + '/orders').on('value', function(snapshot) {
                     let val = snapshot.val();
                     if (val) {
                         biz_orders = Array.isArray(val) ? val : Object.values(val);
@@ -1705,8 +1716,7 @@
                     }
                 });
 
-                // Fetch WhatsApp and confirmation message settings for customer notifications
-                firebase.database().ref('businesses/' + bizId + '/settings').once('value', (snapshot) => {
+                firebase.database().ref('businesses/' + bizId + '/settings').once('value', function(snapshot) {
                     let val = snapshot.val();
                     if (val) {
                         if (val.whatsapp) localStorage.setItem('biz_whatsapp', val.whatsapp);
@@ -1714,7 +1724,6 @@
                     }
                 });
             } else {
-                // Offline fallback: use localStorage data
                 renderMauzoProducts('customer');
             }
         }
@@ -1923,8 +1932,9 @@
         function _autoSyncOnLoad() {
             if (!useFirebase || !bizId) return;
             firebase.database().ref('businesses/' + bizId).update({
-                products: biz_products,
-                orders:   biz_orders,
+                products:   biz_products,
+                orders:     biz_orders,
+                categories: biz_categories,
                 settings: {
                     whatsapp:   localStorage.getItem('biz_whatsapp')    || '',
                     confirmMsg: localStorage.getItem('biz_confirm_msg') || ''
@@ -1943,6 +1953,7 @@
             if (useFirebase && bizId) {
                 firebase.database().ref('businesses/' + bizId + '/orders').set(biz_orders);
                 firebase.database().ref('businesses/' + bizId + '/products').set(biz_products);
+                firebase.database().ref('businesses/' + bizId + '/categories').set(biz_categories);
                 // Sync customer-facing settings so customer portal reads them from Firebase
                 let wa = localStorage.getItem('biz_whatsapp') || '';
                 let msg = localStorage.getItem('biz_confirm_msg') || '';
