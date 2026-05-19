@@ -326,10 +326,9 @@
                         <canvas id="salesChart" height="80"></canvas>
                     </div>
 
-                    <div class="panel">
-                        <h2 style="font-size: 16px; margin-bottom: 15px; color: #2b2d42;">Uchambuzi wa Biashara (Business Analysis)</h2>
-                        <div id="businessAnalysisContent">
-                            </div>
+                    <div class="panel" style="border-top: 3px solid var(--primary);">
+                        <h2 style="font-size: 16px; margin-bottom: 15px; color: #2b2d42;">Uchambuzi wa Biashara &amp; Utabiri (Business Analytics &amp; Forecast)</h2>
+                        <div id="businessAnalysisContent"></div>
                     </div>
                 </div>
             </div>
@@ -584,12 +583,13 @@
     <script>
         // --- CONFIGURATION YA FIREBASE ---
         const firebaseConfig = {
-            apiKey: "AIzaSyAsDemoKey_PlaceholderOnly",
-            authDomain: "duka-letu-default.firebaseapp.com",
-            databaseURL: "https://duka-letu-default-rtdb.firebaseio.com",
-            projectId: "duka-letu-default",
-            storageBucket: "duka-letu-default.appspot.com",
-            appId: "1:000000000000:web:00000000000000"
+            apiKey: "AIzaSyCtaBoOnZbPRApRdeuzc4srIaYyShwfzT8",
+            authDomain: "customer-centre.firebaseapp.com",
+            databaseURL: "https://customer-centre-default-rtdb.firebaseio.com",
+            projectId: "customer-centre",
+            storageBucket: "customer-centre.firebasestorage.app",
+            messagingSenderId: "533003882417",
+            appId: "1:533003882417:web:ebea2fcd28753e95ecb790"
         };
 
         let useFirebase = false;
@@ -668,22 +668,19 @@
             if (useFirebase && bizId) {
                 firebase.database().ref('businesses/' + bizId + '/orders').on('value', (snapshot) => {
                     let val = snapshot.val();
-                    if(val) {
-                        biz_orders = val;
+                    if (val) {
+                        biz_orders = Array.isArray(val) ? val : Object.values(val);
                         localStorage.setItem('biz_orders', JSON.stringify(biz_orders));
-                        if(isCustomerView) renderCustomerOrders(); else renderAdminOrders();
+                        if (isCustomerView) renderCustomerOrders(); else { renderAdminOrders(); }
                     }
                 });
                 firebase.database().ref('businesses/' + bizId + '/products').on('value', (snapshot) => {
                     let val = snapshot.val();
-                    if(val) {
-                        biz_products = val;
+                    if (val) {
+                        biz_products = Array.isArray(val) ? val : Object.values(val);
                         localStorage.setItem('biz_products', JSON.stringify(biz_products));
-                        if(isCustomerView) renderMauzoProducts('customer'); else {
-                            renderInventory();
-                            filterMauzoProducts();
-                            renderExpiredProducts();
-                        }
+                        if (isCustomerView) renderMauzoProducts('customer');
+                        else { renderInventory(); filterMauzoProducts(); renderExpiredProducts(); }
                     }
                 });
             }
@@ -1254,84 +1251,468 @@
             chartInstance = new Chart(ctx.getContext('2d'), { type: 'bar', data: { labels: labels, datasets: [ { label: `Mapato (Tsh)`, data: revDataPoints, backgroundColor: 'rgba(67, 97, 238, 0.8)', borderRadius: 4 }, { label: `Faida (Tsh)`, data: profitDataPoints, backgroundColor: 'rgba(46, 204, 113, 0.8)', borderRadius: 4 }, { label: `Hasara (Tsh)`, data: lossDataPoints, backgroundColor: 'rgba(231, 76, 60, 0.8)', borderRadius: 4 } ] }, options: { responsive: true, scales: { y: { beginAtZero: true } } } });
         }
 
-        // --- UCHAMBUZI WA BIASHARA & FORECASTING ---
+        // --- UCHAMBUZI WA BIASHARA, UTABIRI NA USHAURI WA MFUMO (PROFESSIONAL + AI + KISWAHILI) ---
+
+        // Chora grafu ya mwenendo wa siku 7 — bidhaa zote au bidhaa moja
+        function renderProductTrendChart() {
+            let selEl  = document.getElementById('productTrendSelect');
+            let selId  = selEl ? selEl.value : 'all';
+            let selName= selEl && selEl.options[selEl.selectedIndex] ? selEl.options[selEl.selectedIndex].text : 'Bidhaa Zote';
+
+            let labels = [], revData = [], profitData = [], lossData = [];
+            for (let i = 6; i >= 0; i--) {
+                let d = new Date(); d.setDate(d.getDate() - i);
+                let ds = d.toLocaleDateString();
+                labels.push(ds);
+                if (selId === 'all') {
+                    let daySums = biz_summary.filter(s => new Date(s.date).toLocaleDateString() === ds);
+                    let dRev = daySums.reduce((a, s) => a + s.revenue, 0);
+                    let dNet = daySums.reduce((a, s) => a + s.netProfit, 0);
+                    if (biz_session.isOpen && ds === new Date().toLocaleDateString()) {
+                        dRev += biz_session.revenue;
+                        dNet += (biz_session.revenue - biz_session.cogs) - biz_session.expenses - (biz_session.expiredLoss || 0);
+                    }
+                    revData.push(dRev);
+                    profitData.push(dNet > 0 ? dNet : 0);
+                    lossData.push(dNet < 0 ? Math.abs(dNet) : 0);
+                } else {
+                    let pid = parseInt(selId);
+                    let dayReceipts = biz_receipts.filter(r => new Date(r.date).toLocaleDateString() === ds);
+                    let pRev = 0, pCost = 0;
+                    dayReceipts.forEach(r => {
+                        r.items && r.items.forEach(i => {
+                            if (i.product && i.product.id === pid) {
+                                pRev  += i.totalPrice || 0;
+                                pCost += i.totalCost  || 0;
+                            }
+                        });
+                    });
+                    let pProfit = pRev - pCost;
+                    revData.push(pRev);
+                    profitData.push(pProfit > 0 ? pProfit : 0);
+                    lossData.push(pProfit < 0 ? Math.abs(pProfit) : 0);
+                }
+            }
+            let trendCtx = document.getElementById('salesTrendChart');
+            if (!trendCtx) return;
+            if (window.salesTrendChartInstance) window.salesTrendChartInstance.destroy();
+            window.salesTrendChartInstance = new Chart(trendCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Mapato (Tsh)',  data: revData,    borderColor: '#4361ee', backgroundColor: 'rgba(67,97,238,0.08)',  fill: true, tension: 0.4, borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#4361ee' },
+                        { label: 'Faida (Tsh)',   data: profitData, borderColor: '#2ecc71', backgroundColor: 'rgba(46,204,113,0.08)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#2ecc71' },
+                        { label: 'Hasara (Tsh)',  data: lossData,   borderColor: '#e74c3c', backgroundColor: 'rgba(231,76,60,0.08)',  fill: true, tension: 0.4, borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#e74c3c' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title:  { display: true, text: 'Mwenendo wa Siku 7 — ' + selName, font: { size: 13 } },
+                        legend: { position: 'top', labels: { font: { size: 11 } } }
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { callback: function(v){ return 'Tsh ' + v.toLocaleString(); } } } }
+                }
+            });
+        }
+
         function updateBusinessAnalysis() {
             let analysisDiv = document.getElementById('businessAnalysisContent');
             if(!analysisDiv) return;
 
-            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">';
+            // ================================================================
+            // A. HESABU ZA MSINGI
+            // ================================================================
+            let totalRev = 0, totalCOGS = 0, totalExpenses = 0, totalNet = 0;
+            biz_summary.forEach(function(s) {
+                totalRev      += s.revenue;
+                totalCOGS     += s.cogs;
+                totalExpenses += (s.expenses || 0) + (s.expiredLoss || 0);
+                totalNet      += s.netProfit;
+            });
+            if (biz_session.isOpen) {
+                var exLoss0 = biz_session.expiredLoss || 0;
+                totalRev      += biz_session.revenue;
+                totalCOGS     += biz_session.cogs;
+                totalExpenses += biz_session.expenses + exLoss0;
+                totalNet      += (biz_session.revenue - biz_session.cogs) - biz_session.expenses - exLoss0;
+            }
+            var grossMargin    = totalRev > 0 ? ((totalRev - totalCOGS) / totalRev) * 100 : 0;
+            var netMargin      = totalRev > 0 ? (totalNet / totalRev) * 100 : 0;
+            var expenseRatio   = totalRev > 0 ? (totalExpenses / totalRev) * 100 : 0;
+            var cogsRatio      = totalRev > 0 ? (totalCOGS / totalRev) * 100 : 0;
+            var sessionCount   = biz_summary.length + (biz_session.isOpen ? 1 : 0);
+            var avgDailyRev    = sessionCount > 0 ? totalRev / sessionCount : 0;
+            var avgDailyProfit = sessionCount > 0 ? totalNet / sessionCount : 0;
+            var avgTxnValue    = biz_receipts.length > 0 ? totalRev / biz_receipts.length : 0;
 
-            // 1. Profit Margins & Sales Trends
-            let totalRev = 0, totalCost = 0;
-            biz_summary.forEach(s => { totalRev += s.revenue; totalCost += s.cogs; });
-            if(biz_session.isOpen) { totalRev += biz_session.revenue; totalCost += biz_session.cogs; }
-            
-            let profitMargin = totalRev > 0 ? ((totalRev - totalCost) / totalRev) * 100 : 0;
-            
-            html += `<div class="card" style="border-left: 4px solid var(--primary);">
-                <h3>Mwenendo na Faida</h3>
-                <p style="font-size: 14px; font-weight: normal; color: #555; margin-top: 10px; line-height: 1.6;">
-                    <strong>Kiwango cha Faida (Margin):</strong> <span class="text-success" style="font-weight:bold;">${profitMargin.toFixed(1)}%</span><br>
-                    Hii inamaanisha katika kila Tsh 100 inayoingia, Tsh ${profitMargin.toFixed(0)} ni faida ghafi (kabla ya matumizi).
-                </p>
-            </div>`;
+            // Ukuaji wa mapato: wiki hii dhidi ya wiki iliyopita
+            var last7Rev = [], thisWeekRev = 0, lastWeekRev = 0;
+            for (var wi = 6; wi >= 0; wi--) {
+                var wd = new Date(); wd.setDate(wd.getDate() - wi);
+                var wds = wd.toLocaleDateString();
+                var wDaySums = biz_summary.filter(function(s){ return new Date(s.date).toLocaleDateString() === wds; });
+                var wDayRev = wDaySums.reduce(function(a,s){ return a + s.revenue; }, 0);
+                if (biz_session.isOpen && wds === new Date().toLocaleDateString()) wDayRev += biz_session.revenue;
+                last7Rev.push(wDayRev);
+                thisWeekRev += wDayRev;
+            }
+            for (var li = 13; li >= 7; li--) {
+                var ld = new Date(); ld.setDate(ld.getDate() - li);
+                var lds = ld.toLocaleDateString();
+                lastWeekRev += biz_summary.filter(function(s){ return new Date(s.date).toLocaleDateString() === lds; }).reduce(function(a,s){ return a + s.revenue; }, 0);
+            }
+            var growthRate = lastWeekRev > 0 ? ((thisWeekRev - lastWeekRev) / lastWeekRev) * 100 : 0;
 
-            // 2. Ubashiri (Forecasting)
-            let forecastHtml = "<ul style='padding-left: 15px; margin-top: 10px; line-height: 1.8;'>";
-            let hasForecast = false;
-            
-            let weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
-            let productSales = {};
-            biz_receipts.forEach(r => {
-                if(new Date(r.date) >= weekAgo) {
-                    r.items.forEach(i => {
-                        productSales[i.product.id] = (productSales[i.product.id] || 0) + i.stockQtyToDeduct;
+            // Thamani ya ghala
+            var lowStockCount  = biz_products.filter(function(p){ return p.stock > 0 && p.stock <= (p.initialStock * 0.25) && p.initialStock > 0; }).length;
+            var outStockCount  = biz_products.filter(function(p){ return p.stock <= 0; }).length;
+            var totalInvCost   = biz_products.reduce(function(s,p){ return s + (p.cost * p.stock); }, 0);
+            var totalInvRetail = biz_products.reduce(function(s,p){ return s + (p.price * p.stock); }, 0);
+            var potentialGross = totalInvRetail - totalInvCost;
+
+            // Mauzo ya bidhaa — siku 7 zilizopita
+            var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+            var productSales = {};
+            biz_receipts.forEach(function(r){
+                if (new Date(r.date) >= weekAgo)
+                    r.items && r.items.forEach(function(i){
+                        productSales[i.product.id] = (productSales[i.product.id] || 0) + (i.stockQtyToDeduct || 0);
+                    });
+            });
+
+            // Mchango wa kila bidhaa
+            var prodContrib = {};
+            biz_receipts.forEach(function(r){
+                r.items && r.items.forEach(function(i){
+                    if (i.product) {
+                        if (!prodContrib[i.product.id]) prodContrib[i.product.id] = { name: i.product.name, category: i.product.category || '', rev: 0, cost: 0, qty: 0 };
+                        prodContrib[i.product.id].rev  += i.totalPrice || 0;
+                        prodContrib[i.product.id].cost += i.totalCost  || 0;
+                        prodContrib[i.product.id].qty  += i.stockQtyToDeduct || 0;
+                    }
+                });
+            });
+            var prodContribArr = Object.entries(prodContrib).map(function(e){
+                var id = e[0], d = e[1];
+                return {
+                    id: parseInt(id), name: d.name, category: d.category, rev: d.rev, cost: d.cost, qty: d.qty,
+                    profit:    d.rev - d.cost,
+                    revPct:    totalRev  > 0 ? (d.rev / totalRev * 100)            : 0,
+                    costPct:   totalCOGS > 0 ? (d.cost / totalCOGS * 100)          : 0,
+                    profitPct: totalNet  > 0 ? ((d.rev - d.cost) / totalNet * 100) : 0
+                };
+            }).sort(function(a,b){ return b.rev - a.rev; });
+
+            // Kategoria
+            var catRevMap = {};
+            biz_receipts.forEach(function(r){ r.items && r.items.forEach(function(i){
+                if (i.product && i.product.category)
+                    catRevMap[i.product.category] = (catRevMap[i.product.category] || 0) + (i.totalPrice || 0);
+            }); });
+            var catSorted = Object.entries(catRevMap).sort(function(a,b){ return b[1]-a[1]; });
+            var bestCat = catSorted[0] || null;
+
+            // Hatua ya usawa
+            var avgExpPerSession = sessionCount > 0 ? totalExpenses / sessionCount : 0;
+            var avgCOGSRate = totalRev > 0 ? totalCOGS / totalRev : 0;
+            var breakEven = avgCOGSRate < 1 ? avgExpPerSession / (1 - avgCOGSRate) : 0;
+
+            // ================================================================
+            // B. USHAURI WA MFUMO (AI RECOMMENDATIONS)
+            // ================================================================
+            var aiRecs = [];
+
+            if (totalRev > 0 && netMargin < 10) {
+                aiRecs.push({ type:'danger',
+                    title: 'Faida Halisi Ni Ndogo Sana',
+                    obs:   'Faida halisi ni ' + netMargin.toFixed(1) + '% ya mapato yote.',
+                    reason:'Biashara yenye afya inapaswa kuwa na faida ya angalau 15-20%. COGS inachukua ' + cogsRatio.toFixed(1) + '% na matumizi ' + expenseRatio.toFixed(1) + '% — hii inaacha nafasi ndogo sana.',
+                    action:'Zunguza na wasambazaji ili kupunguza bei ya kununulia. Angalia matumizi yasiyoleta mapato na uyaondoe au uyapunguze.'
+                });
+            } else if (totalRev > 0 && netMargin >= 20) {
+                aiRecs.push({ type:'success',
+                    title: 'Faida Halisi Ni Nzuri Sana',
+                    obs:   'Faida halisi iko ' + netMargin.toFixed(1) + '% — juu ya kiwango cha kawaida cha tasnia.',
+                    reason:'Biashara inadhibiti vizuri gharama za bidhaa (' + cogsRatio.toFixed(1) + '%) na matumizi (' + expenseRatio.toFixed(1) + '%). Uwiano huu unaonyesha ufanisi wa hali ya juu.',
+                    action:'Endelea na mkakati huu. Tumia sehemu ya faida hii kuongeza hisa za bidhaa zinazouza vizuri au kupanua mstari wa bidhaa mpya.'
+                });
+            }
+
+            if (lastWeekRev > 0 && growthRate < -10) {
+                aiRecs.push({ type:'danger',
+                    title: 'Mauzo Yameshuka Kwa Kasi',
+                    obs:   'Wiki hii Tsh ' + thisWeekRev.toLocaleString(undefined,{maximumFractionDigits:0}) + ' — kushuka kwa ' + Math.abs(growthRate).toFixed(1) + '% ikilinganishwa na wiki iliyopita (Tsh ' + lastWeekRev.toLocaleString(undefined,{maximumFractionDigits:0}) + ').',
+                    reason:'Kushuka kwa zaidi ya 10% kwa wiki moja ni ishara ya tahadhari. Sababu zinazowezekana: bidhaa kuu kukosa hisa, ushindani, au mabadiliko ya msimu.',
+                    action:'Angalia bidhaa zipi hazikuuzwa wiki hii. Toa ofa maalum ya muda mfupi ili kufufua mapato.'
+                });
+            } else if (lastWeekRev > 0 && growthRate >= 15) {
+                aiRecs.push({ type:'success',
+                    title: 'Mauzo Yanakua Haraka',
+                    obs:   'Mauzo yameongezeka kwa ' + growthRate.toFixed(1) + '% — Tsh ' + thisWeekRev.toLocaleString(undefined,{maximumFractionDigits:0}) + ' wiki hii dhidi ya Tsh ' + lastWeekRev.toLocaleString(undefined,{maximumFractionDigits:0}) + ' wiki iliyopita.',
+                    reason:'Ukuaji wa haraka unahitaji uzingativu wa hisa. Bidhaa zinazouza sana zinaweza kukimbia hisa bila onyo.',
+                    action:'Hakikisha hisa za bidhaa zinazouza zaidi zinatosha. Hii ni wakati mzuri wa kuongeza aina mpya za bidhaa au kutafuta wateja wapya.'
+                });
+            }
+
+            biz_products.forEach(function(p){
+                var sold7p = productSales[p.id] || 0;
+                var dailyAvgP = sold7p / 7;
+                if (dailyAvgP > 0 && p.stock > 0) {
+                    var daysLeftP = Math.floor(p.stock / dailyAvgP);
+                    if (daysLeftP <= 3) {
+                        var reorderQty = Math.ceil(dailyAvgP * 14);
+                        aiRecs.push({ type:'danger',
+                            title: 'Hisa ya "' + p.name + '" Inaisha Siku ' + (daysLeftP < 1 ? '<1' : daysLeftP) + ' Zijazo',
+                            obs:   'Hisa iliyobaki: ' + p.stock + ' ' + p.unit + '. Kasi ya mauzo: ' + dailyAvgP.toFixed(2) + ' ' + p.unit + '/siku.',
+                            reason:'Kwa kasi ya sasa, hisa haitoshi hata kwa siku ' + daysLeftP + '. Kukosa bidhaa hii kunaweza kupoteza mapato yanayokadiriwa Tsh ' + (dailyAvgP * p.price * 7).toLocaleString(undefined,{maximumFractionDigits:0}) + ' kwa wiki.',
+                            action:'Nunua angalau ' + reorderQty + ' ' + p.unit + ' za "' + p.name + '" sasa ili kuendelea kwa wiki mbili bila tatizo.'
+                        });
+                    }
+                }
+            });
+
+            biz_products.forEach(function(p){
+                var sold7d = productSales[p.id] || 0;
+                var capitalTied = p.cost * p.stock;
+                if (sold7d === 0 && p.stock > 0 && p.initialStock >= 2) {
+                    aiRecs.push({ type:'warning',
+                        title: '"' + p.name + '" Haijauza Wiki Nzima',
+                        obs:   'Hisa iliyopo: ' + p.stock + ' ' + p.unit + ' (thamani ya mtaji: Tsh ' + capitalTied.toLocaleString(undefined,{maximumFractionDigits:0}) + ').',
+                        reason:'Stoki iliyolala inazuia mtaji wako bila kuzalisha mapato. Pesa hizi zingeweza kutumika kununua bidhaa zinazouza vizuri. Hisa iliyotulia kwa muda mrefu pia inaweza kuharibika.',
+                        action:'Toa punguzo la bei ya "' + p.name + '" kwa muda mfupi. Epuka kununua bidhaa hii tena hadi hisa iliyopo iishe.'
                     });
                 }
             });
 
-            biz_products.forEach(p => {
-                let soldLast7Days = productSales[p.id] || 0;
-                let dailyAvg = soldLast7Days / 7;
+            if (totalRev > 0 && expenseRatio > 25) {
+                aiRecs.push({ type:'warning',
+                    title: 'Matumizi ya Uendeshaji Yanabana Faida',
+                    obs:   'Matumizi yanachukua ' + expenseRatio.toFixed(1) + '% ya mapato — zaidi ya kiwango bora cha 20%.',
+                    reason:'Kwa mapato ya wastani wa Tsh ' + avgDailyRev.toLocaleString(undefined,{maximumFractionDigits:0}) + '/siku, punguzo la 5% la matumizi lingeongeza faida kwa Tsh ' + (avgDailyRev * 0.05).toLocaleString(undefined,{maximumFractionDigits:0}) + '/siku — bila kuongeza mauzo hata kidogo.',
+                    action:'Piga orodha ya kila aina ya matumizi. Uliza: "Je, hii inazalisha mapato?" Angalia makundi kama Usafiri na Ukarabati kwanza.'
+                });
+            }
 
-                // Rule 1: Running out soon
-                if (dailyAvg > 0 && p.stock > 0) {
-                    let daysLeft = Math.floor(p.stock / dailyAvg);
-                    if (daysLeft <= 5) {
-                        forecastHtml += `<li style="font-size: 13px;"><span class="text-danger">⚠️ <strong>${p.name}:</strong></span> Inaweza kuisha ghalani ndani ya siku <strong>${daysLeft == 0 ? 'ya leo/kesho' : daysLeft}</strong> zijazo.</li>`;
-                        hasForecast = true;
-                    }
-                }
-                
-                // Rule 2: High Demand
-                if (soldLast7Days > 10 && p.stock > 0) {
-                    forecastHtml += `<li style="font-size: 13px;"><span class="text-success">🔥 <strong>${p.name}:</strong></span> Ina uhitaji mkubwa sana sokoni kwa sasa.</li>`;
-                    hasForecast = true;
-                }
+            if (prodContribArr.length > 0) {
+                var top = prodContribArr[0];
+                aiRecs.push({ type:'info',
+                    title: '"' + top.name + '" Ndiyo Chanzo Kikuu cha Mapato',
+                    obs:   'Inachukua ' + top.revPct.toFixed(1) + '% ya mapato yote (Tsh ' + top.rev.toLocaleString(undefined,{maximumFractionDigits:0}) + ') na ' + top.costPct.toFixed(1) + '% ya gharama zote za bidhaa.',
+                    reason:'Biashara inayotegemea bidhaa moja inakabiliwa na hatari ya mkakati. Ikiwa hisa ya "' + top.name + '" inakwisha au bei ya kununulia inapanda, mapato yote yataathirika haraka.',
+                    action:'Hakikisha "' + top.name + '" ina hisa ya kutosha daima. Wakati huo huo, tengeneza mkakati wa kuongeza mchango wa bidhaa nyingine ili kupunguza utegemezi huu.'
+                });
+            }
 
-                // Rule 3: Low sales / By order
-                if (soldLast7Days === 0 && p.stock > 0 && p.initialStock > 0) {
-                    forecastHtml += `<li style="font-size: 13px;"><span style="color:var(--warning)">📉 <strong>${p.name}:</strong></span> Mwenendo wake ni duni, inashauriwa iuzwe kwa oda kuepuka stoki kulala.</li>`;
-                    hasForecast = true;
-                }
+            if (breakEven > 0) {
+                var beOk = avgDailyRev >= breakEven;
+                aiRecs.push({ type: beOk ? 'success' : 'warning',
+                    title: 'Uchambuzi wa Hatua ya Usawa (Break-Even)',
+                    obs:   'Hatua ya usawa ni Tsh ' + breakEven.toLocaleString(undefined,{maximumFractionDigits:0}) + '/siku. Wastani wako wa sasa ni Tsh ' + avgDailyRev.toLocaleString(undefined,{maximumFractionDigits:0}) + '/siku.',
+                    reason: beOk ? 'Biashara yako inazidi kiwango hiki kwa Tsh ' + (avgDailyRev - breakEven).toLocaleString(undefined,{maximumFractionDigits:0}) + '/siku — ishara nzuri ya afya ya biashara na uwezo wa kuhimili siku mbaya za mauzo.'
+                                 : 'Bado haujafika kiwango cha usawa — biashara bado inafanya hasara kwa wastani kila siku inayofunguliwa.',
+                    action: beOk ? 'Endelea kudhibiti matumizi na kuhakikisha mauzo hayashuki chini ya Tsh ' + breakEven.toLocaleString(undefined,{maximumFractionDigits:0}) + '/siku.'
+                                 : 'Lenga kufikia au kuzidi Tsh ' + breakEven.toLocaleString(undefined,{maximumFractionDigits:0}) + '/siku kwa kuongeza mauzo au kupunguza matumizi ya uendeshaji.'
+                });
+            }
+
+            if (aiRecs.length === 0) {
+                aiRecs.push({ type:'info',
+                    title: 'Mfumo Unakusanya Takwimu',
+                    obs:   'Bado kuna data kidogo sana kutoa ushauri wa kina.',
+                    reason:'Uchambuzi wa mfumo unategemea historia ya mauzo, gharama, na mzunguko wa hisa kwa angalau siku chache.',
+                    action:'Endelea kufanya mauzo na kufunga biashara kila siku. Baada ya wiki moja, uchambuzi utakuwa na taarifa za kina zaidi.'
+                });
+            }
+
+            // ================================================================
+            // C. JENGA HTML
+            // ================================================================
+
+            // C1. KPI kards
+            function kpiCard(title, value, sub, color) {
+                return '<div class="card" style="border-left:4px solid ' + color + ';padding:12px;">' +
+                    '<h3 style="font-size:10px;color:#666;margin-bottom:5px;text-transform:uppercase;letter-spacing:.6px;">' + title + '</h3>' +
+                    '<p style="font-size:19px;font-weight:700;color:' + color + ';margin-bottom:3px;">' + value + '</p>' +
+                    '<small style="color:#888;font-size:11px;line-height:1.4;">' + sub + '</small></div>';
+            }
+
+            var kpiHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:20px;">';
+            kpiHtml += kpiCard('Faida Ghafi (Gross Margin)',        grossMargin.toFixed(1) + '%',                                    'Tsh ' + grossMargin.toFixed(0) + ' faida kwa kila Tsh 100 inayoingia', '#4361ee');
+            kpiHtml += kpiCard('Faida Halisi (Net Margin)',          netMargin.toFixed(1) + '%',                                     'Baada ya COGS (' + cogsRatio.toFixed(0) + '%) na matumizi (' + expenseRatio.toFixed(0) + '%)', netMargin >= 15 ? '#2ecc71' : netMargin >= 5 ? '#f39c12' : '#e74c3c');
+            kpiHtml += kpiCard('Ukuaji wa Mauzo (Wiki Hii)',         (growthRate >= 0 ? '+' : '') + growthRate.toFixed(1) + '%',    'Wiki hii Tsh ' + thisWeekRev.toLocaleString(undefined,{maximumFractionDigits:0}) + ' | Wiki iliyopita Tsh ' + lastWeekRev.toLocaleString(undefined,{maximumFractionDigits:0}), growthRate >= 0 ? '#2ecc71' : '#e74c3c');
+            kpiHtml += kpiCard('Wastani wa Kila Muamala',            'Tsh ' + avgTxnValue.toLocaleString(undefined,{maximumFractionDigits:0}),   'Risiti ' + biz_receipts.length + ' jumla zilizorekodiwa', '#17a2b8');
+            kpiHtml += kpiCard('Wastani wa Mapato / Siku',           'Tsh ' + avgDailyRev.toLocaleString(undefined,{maximumFractionDigits:0}),   'Kwa siku ' + sessionCount + ' zilizofunguliwa', '#6f42c1');
+            kpiHtml += kpiCard('Wastani wa Faida / Siku',            'Tsh ' + avgDailyProfit.toLocaleString(undefined,{maximumFractionDigits:0}),'Faida halisi kwa wastani kwa kila siku', avgDailyProfit >= 0 ? '#2ecc71' : '#e74c3c');
+            kpiHtml += kpiCard('Uwiano wa COGS',                     cogsRatio.toFixed(1) + '%',                                    'Gharama za bidhaa dhidi ya mauzo yote', '#fd7e14');
+            kpiHtml += kpiCard('Uwiano wa Matumizi',                 expenseRatio.toFixed(1) + '%',                                 'Matumizi ya uendeshaji dhidi ya mauzo', '#e83e8c');
+            kpiHtml += kpiCard('Hatua ya Usawa / Siku (Break-Even)', 'Tsh ' + breakEven.toLocaleString(undefined,{maximumFractionDigits:0}),     'Mauzo ya chini kabla ya faida kuanza kuonekana', '#adb5bd');
+            kpiHtml += kpiCard('Kategoria Inayoongoza',              bestCat ? bestCat[0] : 'Bado hakuna',                         bestCat ? 'Tsh ' + bestCat[1].toLocaleString(undefined,{maximumFractionDigits:0}) + ' mapato jumla' : 'Fanya mauzo kuona uchambuzi', '#20c997');
+            kpiHtml += kpiCard('Thamani ya Ghala (Gharama)',         'Tsh ' + totalInvCost.toLocaleString(undefined,{maximumFractionDigits:0}),  'Thamani ya rejareja: Tsh ' + totalInvRetail.toLocaleString(undefined,{maximumFractionDigits:0}), '#343a40');
+            kpiHtml += kpiCard('Faida Inayowezekana (Ghala)',        'Tsh ' + potentialGross.toLocaleString(undefined,{maximumFractionDigits:0}),outStockCount + ' zimeisha | ' + lowStockCount + ' zinapungua', potentialGross > 0 ? '#2ecc71' : '#e74c3c');
+            kpiHtml += '</div>';
+
+            // C2. Mwenendo wa mauzo + kichaguzi cha bidhaa
+            var productOptions = '<option value="all">Bidhaa Zote</option>' + biz_products.map(function(p){ return '<option value="' + p.id + '">' + p.name + '</option>'; }).join('');
+            var trendHtml = '<div class="panel" style="margin-bottom:20px;background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.4);">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">' +
+                '<h2 style="font-size:14px;font-weight:700;color:#2b2d42;text-transform:uppercase;letter-spacing:.5px;margin:0;">Mwenendo wa Mauzo — Siku 7 Zilizopita</h2>' +
+                '<div style="display:flex;align-items:center;gap:8px;">' +
+                '<label style="font-size:12px;color:#555;font-weight:600;">Chuja Kwa Bidhaa:</label>' +
+                '<select id="productTrendSelect" onchange="renderProductTrendChart()" style="padding:6px 10px;border:1px solid rgba(0,0,0,0.15);border-radius:4px;font-size:12px;background:white;min-width:160px;">' + productOptions + '</select>' +
+                '</div></div>' +
+                '<canvas id="salesTrendChart" height="75"></canvas></div>';
+
+            // C3. Mchango wa kila bidhaa
+            var contribHtml = '<div class="panel" style="margin-bottom:20px;background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.4);">' +
+                '<h2 style="font-size:14px;font-weight:700;color:#2b2d42;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Mchango wa Kila Bidhaa (Contribution Analysis)</h2>' +
+                '<table style="margin:0;box-shadow:none;font-size:12px;"><thead><tr>' +
+                '<th>#</th><th>Bidhaa</th><th>Kilichouzwa</th>' +
+                '<th>Mapato (Tsh)</th><th style="color:#4361ee;">% Mapato</th>' +
+                '<th>Gharama (Tsh)</th><th style="color:#fd7e14;">% Gharama</th>' +
+                '<th>Faida (Tsh)</th><th style="color:#2ecc71;">% Faida</th>' +
+                '</tr></thead><tbody>';
+
+            function pctBar(pct, color) {
+                return '<div style="display:flex;align-items:center;gap:5px;">' +
+                    '<div style="width:50px;height:6px;background:#e9ecef;border-radius:3px;overflow:hidden;">' +
+                    '<div style="width:' + Math.min(Math.abs(pct),100) + '%;height:100%;background:' + color + ';border-radius:3px;"></div></div>' +
+                    '<span style="font-size:11px;font-weight:700;color:' + color + ';">' + pct.toFixed(1) + '%</span></div>';
+            }
+
+            if (prodContribArr.length === 0) {
+                contribHtml += '<tr><td colspan="9" style="text-align:center;color:gray;padding:20px;">Bado hakuna data ya mauzo ya bidhaa.</td></tr>';
+            } else {
+                prodContribArr.forEach(function(p, idx){
+                    var pc = p.profit >= 0 ? '#2ecc71' : '#e74c3c';
+                    contribHtml += '<tr>' +
+                        '<td><strong>#' + (idx+1) + '</strong></td>' +
+                        '<td><strong>' + p.name + '</strong><br><small style="color:#888;">' + p.category + '</small></td>' +
+                        '<td>' + p.qty.toFixed(1) + '</td>' +
+                        '<td>Tsh ' + p.rev.toLocaleString(undefined,{maximumFractionDigits:0}) + '</td>' +
+                        '<td>' + pctBar(p.revPct, '#4361ee') + '</td>' +
+                        '<td>Tsh ' + p.cost.toLocaleString(undefined,{maximumFractionDigits:0}) + '</td>' +
+                        '<td>' + pctBar(p.costPct, '#fd7e14') + '</td>' +
+                        '<td style="color:' + pc + ';font-weight:700;">Tsh ' + p.profit.toLocaleString(undefined,{maximumFractionDigits:0}) + '</td>' +
+                        '<td>' + pctBar(p.profitPct, pc) + '</td>' +
+                    '</tr>';
+                });
+            }
+            contribHtml += '</tbody></table></div>';
+
+            // C4. Mapato kwa Kategoria
+            var catHtml = '<div class="panel" style="margin-bottom:20px;background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.4);">' +
+                '<h2 style="font-size:14px;font-weight:700;color:#2b2d42;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Mapato kwa Kategoria</h2>' +
+                '<table style="margin:0;box-shadow:none;font-size:13px;"><thead><tr><th>#</th><th>Kategoria</th><th>Mapato (Tsh)</th><th>Sehemu ya Jumla</th></tr></thead><tbody>';
+            if (catSorted.length === 0) {
+                catHtml += '<tr><td colspan="4" style="text-align:center;color:gray;">Bado hakuna data ya mauzo.</td></tr>';
+            } else {
+                catSorted.forEach(function(c, idx){
+                    var pct = totalRev > 0 ? (c[1] / totalRev * 100).toFixed(1) : 0;
+                    catHtml += '<tr><td><strong>#' + (idx+1) + '</strong></td><td>' + c[0] + '</td>' +
+                        '<td>Tsh ' + c[1].toLocaleString(undefined,{maximumFractionDigits:0}) + '</td>' +
+                        '<td><div style="display:flex;align-items:center;gap:8px;">' +
+                        '<div style="flex:1;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:#4361ee;border-radius:4px;"></div></div>' +
+                        '<span style="font-size:11px;color:#555;font-weight:700;">' + pct + '%</span></div></td></tr>';
+                });
+            }
+            catHtml += '</tbody></table></div>';
+
+            // C5. Utabiri wa Hisa
+            var forecastHtml = '<div class="panel" style="margin-bottom:20px;background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.4);">' +
+                '<h2 style="font-size:14px;font-weight:700;color:#2b2d42;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Uchambuzi wa Utabiri wa Hisa (Inventory Forecast)</h2>' +
+                '<table style="margin:0;box-shadow:none;font-size:12px;"><thead><tr><th>Bidhaa</th><th>Hisa Iliyopo</th><th>Mauzo 7 Siku</th><th>Wastani/Siku</th><th>Siku Zilizobaki</th><th>Hali</th></tr></thead><tbody>';
+            if (biz_products.length === 0) {
+                forecastHtml += '<tr><td colspan="6" style="text-align:center;color:gray;">Hakuna bidhaa zilizosajiliwa.</td></tr>';
+            } else {
+                biz_products.forEach(function(p){
+                    var sold7f = productSales[p.id] || 0;
+                    var dailyAvgF = sold7f / 7;
+                    var daysLeftF = dailyAvgF > 0 ? Math.floor(p.stock / dailyAvgF) : null;
+                    var sLabel = '', sColor = '#fff', sBg = '';
+                    if (p.stock <= 0)                                     { sLabel = 'IMEISHA';                     sBg = '#e74c3c'; }
+                    else if (daysLeftF !== null && daysLeftF <= 2)        { sLabel = 'HATARI — Siku ' + (daysLeftF < 1 ? '<1' : daysLeftF); sBg = '#e74c3c'; }
+                    else if (daysLeftF !== null && daysLeftF <= 7)        { sLabel = 'Tahadhari — Inapungua';       sBg = '#f39c12'; }
+                    else if (sold7f === 0 && p.stock > 0)                 { sLabel = 'Haiuzi — Stoki Imekaa'; sColor = '#333'; sBg = '#dee2e6'; }
+                    else if (sold7f > 10)                                 { sLabel = 'Mahitaji Makubwa';            sBg = '#2ecc71'; }
+                    else                                                  { sLabel = 'Hali Nzuri';                  sBg = '#17a2b8'; }
+                    forecastHtml += '<tr>' +
+                        '<td><strong>' + p.name + '</strong><br><small style="color:#888;">' + p.category + '</small></td>' +
+                        '<td>' + p.stock + ' <small>' + p.unit + '</small></td>' +
+                        '<td>' + sold7f.toFixed(1) + '</td>' +
+                        '<td>' + dailyAvgF.toFixed(2) + '</td>' +
+                        '<td>' + (daysLeftF !== null ? daysLeftF + ' siku' : '—') + '</td>' +
+                        '<td><span style="background:' + sBg + ';color:' + sColor + ';padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;">' + sLabel + '</span></td>' +
+                    '</tr>';
+                });
+            }
+            forecastHtml += '</tbody></table></div>';
+
+            // C6. Ushauri wa Mfumo
+            var colorMap = { danger:'#e74c3c', warning:'#f39c12', success:'#2ecc71', info:'#17a2b8' };
+            var bgMap    = { danger:'rgba(231,76,60,0.06)', warning:'rgba(243,156,18,0.06)', success:'rgba(46,204,113,0.06)', info:'rgba(23,162,184,0.06)' };
+            var aiHtml = '<div class="panel" style="margin-bottom:10px;background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.4);">' +
+                '<h2 style="font-size:14px;font-weight:700;color:#2b2d42;margin-bottom:15px;text-transform:uppercase;letter-spacing:.5px;">Ushauri wa Mfumo — Uchambuzi na Mapendekezo</h2>' +
+                '<div style="display:flex;flex-direction:column;gap:12px;">';
+            aiRecs.forEach(function(rec){
+                var c = colorMap[rec.type] || '#17a2b8';
+                var bg = bgMap[rec.type] || 'rgba(23,162,184,0.06)';
+                aiHtml += '<div style="border-left:4px solid ' + c + ';background:' + bg + ';border-radius:0 6px 6px 0;padding:14px 16px;">' +
+                    '<div style="font-weight:700;font-size:13px;color:' + c + ';margin-bottom:6px;">' + rec.title + '</div>' +
+                    '<div style="font-size:12px;color:#333;margin-bottom:5px;"><strong>Uchunguzi:</strong> ' + rec.obs + '</div>' +
+                    '<div style="font-size:12px;color:#555;margin-bottom:5px;"><strong>Sababu:</strong> ' + rec.reason + '</div>' +
+                    '<div style="font-size:12px;color:#222;font-style:italic;border-top:1px solid rgba(0,0,0,0.06);padding-top:6px;margin-top:6px;"><strong>Hatua Inayoshauriwa:</strong> ' + rec.action + '</div>' +
+                    '</div>';
             });
+            aiHtml += '</div></div>';
 
-            if(!hasForecast) forecastHtml += "<li style='font-size: 13px; color: gray; list-style: none;'>Hakuna ubashiri wa kutosha kwa sasa. Mfumo unaendelea kukusanya data.</li>";
-            forecastHtml += "</ul>";
-
-            html += `<div class="card" style="border-left: 4px solid var(--warning);">
-                <h3>Ubashiri (Forecasting)</h3>
-                ${forecastHtml}
-            </div>`;
-
-            html += '</div>';
-            analysisDiv.innerHTML = html;
+            // ================================================================
+            // D. INJEKTI YOTE & CHORA GRAFU
+            // ================================================================
+            analysisDiv.innerHTML = kpiHtml + trendHtml + contribHtml + catHtml + forecastHtml + aiHtml;
+            setTimeout(function(){ renderProductTrendChart(); }, 120);
         }
 
         // --- CUSTOMER PORTAL REALTIME ENGINE ---
         function initCustomerApp() {
+            // Set business name from URL or localStorage
             document.getElementById('custBizTitle').innerText = (biz_user ? biz_user.bizName : "Duka Letu");
-            renderMauzoProducts('customer');
+
+            // If Firebase is available, fetch products and orders live from Firebase using the bizId in the URL
+            if (useFirebase && bizId) {
+                // Live product list for customer — ensures customer sees current stock even from another device
+                firebase.database().ref('businesses/' + bizId + '/products').on('value', (snapshot) => {
+                    let val = snapshot.val();
+                    if (val) {
+                        biz_products = Array.isArray(val) ? val : Object.values(val);
+                        renderMauzoProducts('customer');
+                    } else {
+                        renderMauzoProducts('customer');
+                    }
+                });
+
+                // Live order status updates for customer — order status changes by admin reflect instantly
+                firebase.database().ref('businesses/' + bizId + '/orders').on('value', (snapshot) => {
+                    let val = snapshot.val();
+                    if (val) {
+                        biz_orders = Array.isArray(val) ? val : Object.values(val);
+                        renderCustomerOrders();
+                    }
+                });
+
+                // Fetch WhatsApp and confirmation message settings for customer notifications
+                firebase.database().ref('businesses/' + bizId + '/settings').once('value', (snapshot) => {
+                    let val = snapshot.val();
+                    if (val) {
+                        if (val.whatsapp) localStorage.setItem('biz_whatsapp', val.whatsapp);
+                        if (val.confirmMsg) localStorage.setItem('biz_confirm_msg', val.confirmMsg);
+                    }
+                });
+            } else {
+                // Offline fallback: use localStorage data
+                renderMauzoProducts('customer');
+            }
         }
 
         function switchCustomerTab(tab) {
@@ -1345,13 +1726,50 @@
         }
 
         function submitCustomerOrder() {
-            let name = document.getElementById('custName').value, phone = document.getElementById('custPhone').value;
-            if(custCart.length === 0 || !name || !phone) return alert("Tafadhali jaza taarifa na bidhaa kikamilifu!");
+            let name = document.getElementById('custName').value.trim();
+            let phone = document.getElementById('custPhone').value.trim();
+            if (custCart.length === 0 || !name || !phone) return alert("Tafadhali jaza taarifa na bidhaa kikamilifu!");
             let total = custCart.reduce((sum, c) => sum + c.totalPrice, 0);
-            let o = { id: Date.now(), date: new Date().toISOString(), customerName: name, customerPhone: phone, items: [...custCart], total, status: 'Inasubiri' };
-            biz_orders.push(o); saveData(); custCart = []; renderCart('customer');
-            document.getElementById('custName').value = ''; document.getElementById('custPhone').value = '';
-            alert("Oda imetumwa! Nenda kwenye 'Oda Zangu' kuona majibu."); switchCustomerTab('orders');
+            let o = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                customerName: name,
+                customerPhone: phone,
+                items: [...custCart],
+                total,
+                status: 'Inasubiri'
+            };
+
+            if (useFirebase && bizId) {
+                // Write order to Firebase first (reliable cross-device sync)
+                firebase.database().ref('businesses/' + bizId + '/orders').once('value', (snapshot) => {
+                    let val = snapshot.val();
+                    let existingOrders = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+                    existingOrders.push(o);
+                    firebase.database().ref('businesses/' + bizId + '/orders').set(existingOrders)
+                        .then(() => {
+                            biz_orders = existingOrders;
+                            localStorage.setItem('biz_orders', JSON.stringify(biz_orders));
+                        })
+                        .catch(err => {
+                            // Fallback to localStorage if Firebase write fails
+                            biz_orders.push(o);
+                            localStorage.setItem('biz_orders', JSON.stringify(biz_orders));
+                            console.warn('Firebase write failed, saved locally:', err);
+                        });
+                });
+            } else {
+                // Offline mode: localStorage only
+                biz_orders.push(o);
+                localStorage.setItem('biz_orders', JSON.stringify(biz_orders));
+            }
+
+            custCart = [];
+            renderCart('customer');
+            document.getElementById('custName').value = '';
+            document.getElementById('custPhone').value = '';
+            alert("Oda imetumwa! Nenda kwenye 'Oda Zangu' kuona majibu.");
+            switchCustomerTab('orders');
         }
 
         function renderCustomerOrders() {
@@ -1508,6 +1926,12 @@
             if (useFirebase && bizId) {
                 firebase.database().ref('businesses/' + bizId + '/orders').set(biz_orders);
                 firebase.database().ref('businesses/' + bizId + '/products').set(biz_products);
+                // Sync customer-facing settings so customer portal reads them from Firebase
+                let wa = localStorage.getItem('biz_whatsapp') || '';
+                let msg = localStorage.getItem('biz_confirm_msg') || '';
+                if (wa || msg) {
+                    firebase.database().ref('businesses/' + bizId + '/settings').set({ whatsapp: wa, confirmMsg: msg });
+                }
             }
         }
 
@@ -1536,8 +1960,18 @@
                 document.getElementById('adminSetUserPass').value = localStorage.getItem('biz_user_pass') || '';
             } else alert("Taarifa si sahihi!");
         }
-        function saveWhatsapp() { localStorage.setItem('biz_whatsapp', document.getElementById('adminWhatsapp').value); alert("Namba imehifadhiwa!"); }
-        function saveConfirmMessage() { localStorage.setItem('biz_confirm_msg', document.getElementById('adminConfirmMsg').value); alert("Ujumbe umehifadhiwa!"); }
+        function saveWhatsapp() {
+            let wa = document.getElementById('adminWhatsapp').value;
+            localStorage.setItem('biz_whatsapp', wa);
+            if (useFirebase && bizId) firebase.database().ref('businesses/' + bizId + '/settings/whatsapp').set(wa);
+            alert("Namba imehifadhiwa!");
+        }
+        function saveConfirmMessage() {
+            let msg = document.getElementById('adminConfirmMsg').value;
+            localStorage.setItem('biz_confirm_msg', msg);
+            if (useFirebase && bizId) firebase.database().ref('businesses/' + bizId + '/settings/confirmMsg').set(msg);
+            alert("Ujumbe umehifadhiwa!");
+        }
         function setUserPassword() { localStorage.setItem('biz_user_pass', document.getElementById('adminSetUserPass').value); alert("Nywila imehifadhiwa!"); }
         function openEditRegistration() { closeModals(); document.getElementById('setupModal').classList.add('active'); }
         function saveRegistration() {
