@@ -482,16 +482,69 @@
         </div>
     </div>
 
-    <div id="setupModal" class="modal-overlay">
-        <div class="modal-content">
-            <h2>Karibu! Sajili Biashara Yako</h2>
-            <input type="text" id="regName" placeholder="Jina Lako Kamili">
-            <input type="text" id="regBizName" placeholder="Jina la Biashara">
-            <input type="text" id="regDays" placeholder="Siku za Kazi (Mf: Jumanne - Jumapili)">
-            <input type="text" id="regHours" placeholder="Muda wa Kazi (Mf: 08:00 Asubuhi - 04:00 Usiku)">
-            <button class="btn" onclick="saveRegistration()">Sajili na Anza</button>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" style="position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);z-index:9999;align-items:center;justify-content:center;flex-direction:column;display:flex;">
+        <div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 36px;width:340px;max-width:95%;box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+            <div style="text-align:center;margin-bottom:28px;">
+                <div style="width:60px;height:60px;background:linear-gradient(135deg,#4361ee,#7209b7);border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <h2 style="color:#fff;font-size:20px;margin:0 0 4px;">Mfumo wa Biashara</h2>
+                <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0;">Ingia kwa akaunti yako</p>
+            </div>
+            <div id="loginError" style="display:none;background:rgba(231,76,60,0.15);border:1px solid #e74c3c;border-radius:8px;padding:10px 14px;margin-bottom:14px;color:#ff6b6b;font-size:12px;text-align:center;"></div>
+            <input type="text" id="loginUserId" placeholder="User ID (mf: user001)" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:rgba(255,255,255,0.08);color:#fff;font-size:14px;margin-bottom:12px;box-sizing:border-box;outline:none;">
+            <input type="password" id="loginPassword" placeholder="Nywila" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:rgba(255,255,255,0.08);color:#fff;font-size:14px;margin-bottom:20px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter')doLogin()">
+            <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:13px;background:linear-gradient(135deg,#4361ee,#7209b7);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">Ingia</button>
+            <p style="color:rgba(255,255,255,0.3);font-size:11px;text-align:center;margin-top:20px;">Wasiliana na msimamizi wako kupata akaunti</p>
         </div>
     </div>
+
+    <!-- LOCKED SCREEN -->
+    <div id="lockedScreen" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e,#2d0000);z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
+        <div style="background:rgba(231,76,60,0.1);border:2px solid #e74c3c;border-radius:20px;padding:40px;width:340px;max-width:92%;text-align:center;">
+            <div style="width:64px;height:64px;background:#e74c3c;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <h2 style="color:#e74c3c;font-size:20px;margin-bottom:12px;">Akaunti Imezuiwa</h2>
+            <p id="lockedMsg" style="color:rgba(255,255,255,0.7);font-size:13px;line-height:1.6;margin-bottom:24px;">Akaunti yako imezuiwa. Tafadhali wasiliana na msimamizi ili kuendelea kutumia mfumo.</p>
+            <button onclick="doLogout()" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:10px 24px;border-radius:8px;cursor:pointer;font-size:13px;">Rudi Nyuma</button>
+        </div>
+    </div>
+
+    <!-- SUPER ADMIN PORTAL -->
+    <div id="superAdminPortal" style="display:none;position:fixed;inset:0;background:#0f0f1a;z-index:9998;overflow-y:auto;">
+        <div style="max-width:920px;margin:0 auto;padding:30px 20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;flex-wrap:wrap;gap:12px;">
+                <div>
+                    <h1 style="color:#fff;font-size:22px;margin:0 0 4px;">Super Admin Panel</h1>
+                    <p style="color:rgba(255,255,255,0.4);font-size:12px;margin:0;">Usimamizi wa Watumiaji Wote</p>
+                </div>
+                <button onclick="doLogout()" style="background:#e74c3c;color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;">Toka</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:28px;" id="saStatsRow"></div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:24px;margin-bottom:24px;">
+                <h3 style="color:#fff;font-size:15px;margin:0 0 16px;">Ongeza Mtumiaji Mpya</h3>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px;">
+                    <input type="text" id="saUserId" placeholder="User ID (mf: user001)" style="padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:#fff;font-size:13px;outline:none;">
+                    <input type="password" id="saUserPass" placeholder="Nywila" style="padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:#fff;font-size:13px;outline:none;">
+                    <input type="text" id="saUserBizName" placeholder="Jina la Biashara" style="padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:#fff;font-size:13px;outline:none;">
+                    <input type="text" id="saUserName" placeholder="Jina la Mmiliki" style="padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:#fff;font-size:13px;outline:none;">
+                </div>
+                <button onclick="saCreateUser()" style="background:linear-gradient(135deg,#4361ee,#7209b7);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">Unda Akaunti</button>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;">
+                <div style="padding:18px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                    <h3 style="color:#fff;font-size:15px;margin:0;">Watumiaji Wote</h3>
+                    <button onclick="saLoadUsers()" style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);padding:7px 16px;border-radius:7px;cursor:pointer;font-size:12px;">Refresh</button>
+                </div>
+                <div id="saUsersList" style="padding:16px;color:rgba(255,255,255,0.5);font-size:13px;">Inapakia...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- keep old setup modal hidden (referenced elsewhere) -->
+    <div id="setupModal" style="display:none!important;"></div>
 
     <div id="qtyModal" class="modal-overlay">
         <div class="modal-content">
@@ -646,47 +699,303 @@
             if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
 
-        // --- KUANZISHA MFUMO ---
-        window.onload = () => {
-            if(isCustomerView) {
+        // ================================================================
+        // SUPER ADMIN CREDENTIALS (only you know these)
+        // ================================================================
+        const SA_ID   = 'superadmin';
+        const SA_PASS = 'arshad@2025';   // change this to your own
+
+        // ================================================================
+        // KUANZISHA MFUMO — MULTI-TENANT LOGIN FLOW
+        // ================================================================
+        window.onload = function() {
+            if (isCustomerView) {
+                // Customer portal — no login needed, uses bizId from URL
+                document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminSidebar').style.display = 'none';
                 document.getElementById('adminMain').style.display = 'none';
                 document.getElementById('customerPortal').style.display = 'flex';
                 initCustomerApp();
+                return;
+            }
+
+            // Check if already logged in this session
+            var sessionUser = sessionStorage.getItem('loggedInUser');
+            if (sessionUser) {
+                var parsed = JSON.parse(sessionUser);
+                if (parsed.isSuperAdmin) { showSuperAdminPortal(); }
+                else { bootUserApp(parsed); }
             } else {
-                if (!biz_user) {
-                    document.getElementById('setupModal').classList.add('active');
-                } else {
-                    if(!biz_user.bizId) {
-                        biz_user.bizId = 'biz_' + Date.now() + Math.floor(Math.random()*1000);
-                        localStorage.setItem('biz_user', JSON.stringify(biz_user));
+                showLoginScreen();
+            }
+        };
+
+        function showLoginScreen() {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('adminSidebar').style.display = 'none';
+            document.getElementById('adminMain').style.display = 'none';
+            document.getElementById('lockedScreen').style.display = 'none';
+            document.getElementById('superAdminPortal').style.display = 'none';
+        }
+
+        function doLogin() {
+            var uid  = document.getElementById('loginUserId').value.trim();
+            var pass = document.getElementById('loginPassword').value;
+            var btn  = document.getElementById('loginBtn');
+            var err  = document.getElementById('loginError');
+            if (!uid || !pass) { showLoginError('Jaza User ID na Nywila.'); return; }
+            err.style.display = 'none';
+            btn.innerText = 'Inaingia...'; btn.disabled = true;
+
+            // Super admin check (local — no Firebase needed)
+            if (uid === SA_ID && pass === SA_PASS) {
+                sessionStorage.setItem('loggedInUser', JSON.stringify({ isSuperAdmin: true }));
+                btn.innerText = 'Ingia'; btn.disabled = false;
+                showSuperAdminPortal();
+                return;
+            }
+
+            // Regular user — check Firebase
+            if (!useFirebase) { showLoginError('Hakuna muunganiko wa mtandao. Jaribu tena.'); btn.innerText = 'Ingia'; btn.disabled = false; return; }
+            firebase.database().ref('users/' + uid).once('value', function(snap) {
+                btn.innerText = 'Ingia'; btn.disabled = false;
+                var userData = snap.val();
+                if (!userData) { showLoginError('User ID haipo. Wasiliana na msimamizi.'); return; }
+                if (userData.password !== pass) { showLoginError('Nywila si sahihi.'); return; }
+                if (userData.status === 'locked') {
+                    var reason = userData.lockReason || 'Malipo hayajalipwa. Wasiliana na msimamizi.';
+                    showLockedScreen(reason); return;
+                }
+                // Check subscription expiry
+                if (userData.expiryDate) {
+                    var expiry = new Date(userData.expiryDate);
+                    var today  = new Date();
+                    today.setHours(0,0,0,0);
+                    if (today > expiry) {
+                        // Auto-lock expired account
+                        firebase.database().ref('users/' + uid).update({ status: 'locked', lockReason: 'Usajili umekwisha (' + expiry.toLocaleDateString() + '). Lipa ili kuendelea.' });
+                        showLockedScreen('Usajili wako umekwisha tarehe ' + expiry.toLocaleDateString() + '. Wasiliana na msimamizi kulipa na kufungua akaunti.'); return;
                     }
-                    bizId = biz_user.bizId;
-                    initApp();
+                }
+                // All good — boot the app for this user
+                var userObj = { uid, bizId: userData.bizId, bizName: userData.bizName, name: userData.name, expiryDate: userData.expiryDate };
+                sessionStorage.setItem('loggedInUser', JSON.stringify(userObj));
+                bootUserApp(userObj);
+            }, function(err2) {
+                btn.innerText = 'Ingia'; btn.disabled = false;
+                showLoginError('Hitilafu ya mtandao: ' + (err2.message || err2));
+            });
+        }
+
+        function showLoginError(msg) {
+            var el = document.getElementById('loginError');
+            el.innerText = msg; el.style.display = 'block';
+        }
+
+        function showLockedScreen(msg) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('lockedMsg').innerText = msg;
+            document.getElementById('lockedScreen').style.display = 'flex';
+        }
+
+        function doLogout() {
+            sessionStorage.removeItem('loggedInUser');
+            showLoginScreen();
+        }
+
+        function bootUserApp(userObj) {
+            // Load this user's data from localStorage keyed by their bizId
+            bizId = userObj.bizId;
+            biz_user = { name: userObj.name, bizName: userObj.bizName, bizId: userObj.bizId };
+            var pfx = bizId + '_';
+            biz_categories = JSON.parse(localStorage.getItem(pfx + 'biz_categories')) || [];
+            biz_products    = JSON.parse(localStorage.getItem(pfx + 'biz_products'))   || [];
+            biz_expenses    = JSON.parse(localStorage.getItem(pfx + 'biz_expenses'))   || [];
+            biz_receipts    = JSON.parse(localStorage.getItem(pfx + 'biz_receipts'))   || [];
+            biz_summary     = JSON.parse(localStorage.getItem(pfx + 'biz_summary'))    || [];
+            biz_orders      = JSON.parse(localStorage.getItem(pfx + 'biz_orders'))     || [];
+            biz_session     = JSON.parse(localStorage.getItem(pfx + 'biz_session'))    || { isOpen:false, startTime:null, revenue:0, cogs:0, expenses:0, expiredLoss:0, soldProducts:{} };
+
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('lockedScreen').style.display = 'none';
+            document.getElementById('superAdminPortal').style.display = 'none';
+            document.getElementById('adminSidebar').style.display = '';
+            document.getElementById('adminMain').style.display = '';
+
+            // Show days remaining warning if near expiry
+            if (userObj.expiryDate) {
+                var daysLeft = Math.ceil((new Date(userObj.expiryDate) - new Date()) / 86400000);
+                if (daysLeft <= 5 && daysLeft > 0) {
+                    setTimeout(function(){ alert('Tahadhari: Usajili wako unakwisha siku ' + daysLeft + ' zijazo. Wasiliana na msimamizi kufanya malipo.'); }, 3000);
                 }
             }
 
-            // Real-time listener kutoka Firebase
+            initApp();
+
+            // Real-time Firebase listeners for this user's data
             if (useFirebase && bizId) {
-                firebase.database().ref('businesses/' + bizId + '/orders').on('value', (snapshot) => {
-                    let val = snapshot.val();
+                firebase.database().ref('businesses/' + bizId + '/orders').on('value', function(snapshot) {
+                    var val = snapshot.val();
                     if (val) {
                         biz_orders = Array.isArray(val) ? val : Object.values(val);
-                        localStorage.setItem('biz_orders', JSON.stringify(biz_orders));
-                        if (isCustomerView) renderCustomerOrders(); else { renderAdminOrders(); }
+                        localStorage.setItem(bizId + '_biz_orders', JSON.stringify(biz_orders));
+                        renderAdminOrders();
                     }
                 });
-                firebase.database().ref('businesses/' + bizId + '/products').on('value', (snapshot) => {
-                    let val = snapshot.val();
+                firebase.database().ref('businesses/' + bizId + '/products').on('value', function(snapshot) {
+                    var val = snapshot.val();
                     if (val) {
                         biz_products = Array.isArray(val) ? val : Object.values(val);
-                        localStorage.setItem('biz_products', JSON.stringify(biz_products));
-                        if (isCustomerView) renderMauzoProducts('customer');
-                        else { renderInventory(); filterMauzoProducts(); renderExpiredProducts(); }
+                        localStorage.setItem(bizId + '_biz_products', JSON.stringify(biz_products));
+                        renderInventory(); filterMauzoProducts(); renderExpiredProducts();
                     }
                 });
             }
-        };
+        }
+
+        // ================================================================
+        // SUPER ADMIN PORTAL FUNCTIONS
+        // ================================================================
+        function showSuperAdminPortal() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminSidebar').style.display = 'none';
+            document.getElementById('adminMain').style.display = 'none';
+            document.getElementById('superAdminPortal').style.display = 'block';
+            saLoadUsers();
+        }
+
+        function saLoadUsers() {
+            var list = document.getElementById('saUsersList');
+            var stats = document.getElementById('saStatsRow');
+            list.innerHTML = '<p style="color:rgba(255,255,255,0.4);font-size:13px;">Inapakia watumiaji...</p>';
+            firebase.database().ref('users').once('value', function(snap) {
+                var users = snap.val();
+                if (!users) { list.innerHTML = '<p style="color:rgba(255,255,255,0.4);">Hakuna watumiaji bado.</p>'; return; }
+                var arr = Object.entries(users);
+                var total = arr.length;
+                var active = arr.filter(function(e){ return e[1].status !== 'locked'; }).length;
+                var locked = total - active;
+                var today = new Date(); today.setHours(0,0,0,0);
+                var expiringSoon = arr.filter(function(e){
+                    if (!e[1].expiryDate) return false;
+                    var d = Math.ceil((new Date(e[1].expiryDate) - today) / 86400000);
+                    return d >= 0 && d <= 5;
+                }).length;
+
+                stats.innerHTML = [
+                    ['Watumiaji Wote', total, '#4361ee'],
+                    ['Akaunti Hai', active, '#2ecc71'],
+                    ['Zimezuiwa', locked, '#e74c3c'],
+                    ['Zinakwisha Hivi Karibuni', expiringSoon, '#f39c12']
+                ].map(function(s){
+                    return '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;text-align:center;">' +
+                        '<p style="color:' + s[2] + ';font-size:24px;font-weight:700;margin:0 0 4px;">' + s[1] + '</p>' +
+                        '<p style="color:rgba(255,255,255,0.5);font-size:11px;margin:0;">' + s[0] + '</p></div>';
+                }).join('');
+
+                var rows = arr.map(function(entry) {
+                    var uid = entry[0], u = entry[1];
+                    var isLocked = u.status === 'locked';
+                    var expiry = u.expiryDate ? new Date(u.expiryDate) : null;
+                    var daysLeft = expiry ? Math.ceil((expiry - today) / 86400000) : null;
+                    var expiryStr = expiry ? expiry.toLocaleDateString() : '—';
+                    var daysColor = daysLeft === null ? '#aaa' : daysLeft <= 3 ? '#e74c3c' : daysLeft <= 7 ? '#f39c12' : '#2ecc71';
+                    var statusBadge = isLocked
+                        ? '<span style="background:#e74c3c;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">IMEZUIWA</span>'
+                        : '<span style="background:#2ecc71;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">HAI</span>';
+                    return '<tr style="border-bottom:1px solid rgba(255,255,255,0.06);">' +
+                        '<td style="padding:12px 10px;color:#fff;font-weight:700;">' + uid + '</td>' +
+                        '<td style="padding:12px 10px;color:rgba(255,255,255,0.8);">' + (u.bizName||'—') + '</td>' +
+                        '<td style="padding:12px 10px;color:rgba(255,255,255,0.6);">' + (u.name||'—') + '</td>' +
+                        '<td style="padding:12px 10px;">' + statusBadge + '</td>' +
+                        '<td style="padding:12px 10px;color:' + daysColor + ';font-weight:700;">' + expiryStr + (daysLeft !== null ? ' <small>(' + daysLeft + ' siku)</small>' : '') + '</td>' +
+                        '<td style="padding:12px 10px;">' +
+                            '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+                            (isLocked
+                                ? '<button onclick="saToggleLock(\'' + uid + '\',false)" style="background:#2ecc71;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600;">Fungua</button>'
+                                : '<button onclick="saToggleLock(\'' + uid + '\',true)" style="background:#e74c3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600;">Zuia</button>') +
+                            '<button onclick="saRenew(\'' + uid + '\')" style="background:#4361ee;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600;">Lipia/Risha</button>' +
+                            '<button onclick="saResetPass(\'' + uid + '\')" style="background:#f39c12;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600;">Nywila</button>' +
+                            '<button onclick="saDeleteUser(\'' + uid + '\')" style="background:rgba(231,76,60,0.3);color:#ff6b6b;border:1px solid #e74c3c;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;">Futa</button>' +
+                            '</div></td></tr>';
+                }).join('');
+
+                list.innerHTML = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;box-shadow:none;margin:0;">' +
+                    '<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.15);">' +
+                    ['User ID','Biashara','Mmiliki','Hali','Tarehe ya Mwisho','Vitendo'].map(function(h){
+                        return '<th style="padding:10px;color:rgba(255,255,255,0.5);text-align:left;font-size:11px;text-transform:uppercase;">' + h + '</th>';
+                    }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+            });
+        }
+
+        function saCreateUser() {
+            var uid      = document.getElementById('saUserId').value.trim();
+            var pass     = document.getElementById('saUserPass').value.trim();
+            var bizName  = document.getElementById('saUserBizName').value.trim();
+            var name     = document.getElementById('saUserName').value.trim();
+            if (!uid || !pass || !bizName || !name) { alert('Jaza sehemu zote!'); return; }
+            if (!/^[a-zA-Z0-9_]+$/.test(uid)) { alert('User ID itumie herufi, nambari na _ pekee. Mfano: user001'); return; }
+            var newBizId = 'biz_' + uid + '_' + Date.now();
+            // Set expiry to 30 days from today
+            var expiry = new Date(); expiry.setDate(expiry.getDate() + 30);
+            var expiryStr = expiry.toISOString().split('T')[0];
+            firebase.database().ref('users/' + uid).once('value', function(snap) {
+                if (snap.val()) { alert('User ID "' + uid + '" tayari ipo. Chagua nyingine.'); return; }
+                firebase.database().ref('users/' + uid).set({
+                    password: pass, bizName: bizName, name: name,
+                    bizId: newBizId, status: 'active',
+                    createdAt: new Date().toISOString(),
+                    expiryDate: expiryStr
+                }).then(function() {
+                    alert('Akaunti ya "' + uid + '" imeundwa!\nSiku za mwisho: ' + expiryStr + '\nBiz ID: ' + newBizId);
+                    document.getElementById('saUserId').value = '';
+                    document.getElementById('saUserPass').value = '';
+                    document.getElementById('saUserBizName').value = '';
+                    document.getElementById('saUserName').value = '';
+                    saLoadUsers();
+                });
+            });
+        }
+
+        function saToggleLock(uid, lock) {
+            var reason = lock ? (prompt('Sababu ya kuzuia (itaonekana kwa mtumiaji):') || 'Akaunti imezuiwa na msimamizi.') : null;
+            var update = { status: lock ? 'locked' : 'active' };
+            if (reason) update.lockReason = reason;
+            if (!lock) update.lockReason = '';
+            firebase.database().ref('users/' + uid).update(update).then(function(){
+                saLoadUsers();
+                alert(lock ? '"' + uid + '" amezuiwa.' : '"' + uid + '" amefunguliwa.');
+            });
+        }
+
+        function saRenew(uid) {
+            var months = parseInt(prompt('Ongeza miezi mingapi? (1-12)', '1'));
+            if (!months || months < 1 || months > 12) { alert('Nambari si sahihi.'); return; }
+            firebase.database().ref('users/' + uid + '/expiryDate').once('value', function(snap) {
+                var current = snap.val();
+                var base = (current && new Date(current) > new Date()) ? new Date(current) : new Date();
+                base.setMonth(base.getMonth() + months);
+                var newExpiry = base.toISOString().split('T')[0];
+                firebase.database().ref('users/' + uid).update({ expiryDate: newExpiry, status: 'active', lockReason: '' })
+                    .then(function(){ saLoadUsers(); alert('"' + uid + '" — tarehe mpya ya mwisho: ' + newExpiry); });
+            });
+        }
+
+        function saResetPass(uid) {
+            var newPass = prompt('Weka nywila mpya kwa "' + uid + '":');
+            if (!newPass || newPass.length < 4) { alert('Nywila ni fupi mno (angalau herufi 4).'); return; }
+            firebase.database().ref('users/' + uid + '/password').set(newPass).then(function(){
+                alert('Nywila ya "' + uid + '" imebadilishwa.');
+            });
+        }
+
+        function saDeleteUser(uid) {
+            if (!confirm('Una uhakika wa kufuta akaunti ya "' + uid + '"? Hatua hii haiwezi kurudishwa!')) return;
+            if (!confirm('MARA YA PILI: Futa "' + uid + '" kabisa?')) return;
+            firebase.database().ref('users/' + uid).remove().then(function(){
+                saLoadUsers(); alert('"' + uid + '" amefutwa.');
+            });
+        }
 
         function copyCustomerLink() {
             let id = biz_user ? biz_user.bizId : bizId;
@@ -1731,7 +2040,12 @@
         function switchCustomerTab(tab) {
             if(tab === 'orders') {
                 document.getElementById('custShopView').style.display = 'none';
-                document.getElementById('custOrdersView').style.display = 'flex'; renderCustomerOrders();
+                document.getElementById('custOrdersView').style.display = 'flex';
+                // Pre-fill phone from session if customer has ordered before
+                var savedPhone = sessionStorage.getItem('custMyPhone');
+                var phoneEl = document.getElementById('custPhone');
+                if (savedPhone && phoneEl && !phoneEl.value) phoneEl.value = savedPhone;
+                renderCustomerOrders();
             } else {
                 document.getElementById('custOrdersView').style.display = 'none';
                 document.getElementById('custShopView').style.display = 'flex';
@@ -1943,13 +2257,14 @@
         }
 
         function saveData() {
-            localStorage.setItem('biz_categories', JSON.stringify(biz_categories));
-            localStorage.setItem('biz_products', JSON.stringify(biz_products));
-            localStorage.setItem('biz_expenses', JSON.stringify(biz_expenses));
-            localStorage.setItem('biz_receipts', JSON.stringify(biz_receipts));
-            localStorage.setItem('biz_summary', JSON.stringify(biz_summary));
-            localStorage.setItem('biz_session', JSON.stringify(biz_session));
-            localStorage.setItem('biz_orders', JSON.stringify(biz_orders));
+            var pfx = bizId ? bizId + '_' : '';
+            localStorage.setItem(pfx + 'biz_categories', JSON.stringify(biz_categories));
+            localStorage.setItem(pfx + 'biz_products',   JSON.stringify(biz_products));
+            localStorage.setItem(pfx + 'biz_expenses',   JSON.stringify(biz_expenses));
+            localStorage.setItem(pfx + 'biz_receipts',   JSON.stringify(biz_receipts));
+            localStorage.setItem(pfx + 'biz_summary',    JSON.stringify(biz_summary));
+            localStorage.setItem(pfx + 'biz_session',    JSON.stringify(biz_session));
+            localStorage.setItem(pfx + 'biz_orders',     JSON.stringify(biz_orders));
             if (useFirebase && bizId) {
                 firebase.database().ref('businesses/' + bizId + '/orders').set(biz_orders);
                 firebase.database().ref('businesses/' + bizId + '/products').set(biz_products);
@@ -1980,14 +2295,16 @@
 
         function openAdminModal() { document.getElementById('adminAuthModal').classList.add('active'); }
         function verifyAdmin() {
-            let u = document.getElementById('adminUser').value, p = document.getElementById('adminPass').value;
-            if(u === 'arshad' && p === 'arshad') {
+            var u = document.getElementById('adminUser').value, p = document.getElementById('adminPass').value;
+            if(u === SA_ID && p === SA_PASS) {
                 closeModals(); document.getElementById('adminDashboardModal').classList.add('active');
                 document.getElementById('adminWhatsapp').value = localStorage.getItem('biz_whatsapp') || '';
                 document.getElementById('adminConfirmMsg').value = localStorage.getItem('biz_confirm_msg') || 'Oda yako imethibitishwa! Wasiliana nasi kupitia {waAdmin}.';
                 document.getElementById('adminSetUserPass').value = localStorage.getItem('biz_user_pass') || '';
             } else alert("Taarifa si sahihi!");
         }
+        function openEditRegistration() { closeModals(); }
+        function saveRegistration() { closeModals(); initApp(); }
         function saveWhatsapp() {
             let wa = document.getElementById('adminWhatsapp').value;
             localStorage.setItem('biz_whatsapp', wa);
@@ -2001,15 +2318,11 @@
             alert("Ujumbe umehifadhiwa!");
         }
         function setUserPassword() { localStorage.setItem('biz_user_pass', document.getElementById('adminSetUserPass').value); alert("Nywila imehifadhiwa!"); }
-        function openEditRegistration() { closeModals(); document.getElementById('setupModal').classList.add('active'); }
-        function saveRegistration() {
-            let name = document.getElementById('regName').value, bizName = document.getElementById('regBizName').value;
-            if(!name || !bizName) return alert("Jina na Jina la Biashara ni lazima!");
-            biz_user = { name, bizName, days: document.getElementById('regDays').value, hours: document.getElementById('regHours').value, bizId: 'biz_' + Date.now() };
-            localStorage.setItem('biz_user', JSON.stringify(biz_user)); bizId = biz_user.bizId;
-            closeModals(); initApp();
+        function factoryReset() {
+            if(confirm("TAHADHARI: Hii itafuta data zote za mfumo kwenye kifaa hiki. Una uhakika?")) {
+                localStorage.clear(); sessionStorage.clear(); window.location.reload();
+            }
         }
-        function factoryReset() { if(confirm("MALI KUBWA: Hii itafuta data zote za mfumo na kuanza upya. Una uhakika?")) { localStorage.clear(); sessionStorage.clear(); window.location.reload(); } }
     </script>
 </body>
 </html>
