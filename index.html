@@ -3,7 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Mfumo wa Biashara</title>
+ <title>SHOP MANAGEMENT SYSTEM</title>
  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -137,6 +137,32 @@
  .chart-filters button { padding: 5px 10px; cursor: pointer; border: 1px solid var(--primary); background: transparent; color: var(--primary); border-radius: 4px;}
  .chart-filters button.active { background: var(--primary); color: white; }
  
+ /* ===== MOBILE RESPONSIVE ===== */
+ @media (max-width: 600px) {
+ body { font-size: 13px; }
+ .sidebar { width: 200px !important; min-width: 0; }
+ .panel { padding: 12px 10px !important; }
+ .kpi-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+ .prod-grid, #mauzoProductList, #expiredProductList { grid-template-columns: repeat(2,1fr) !important; gap: 8px !important; }
+ .cart-panel { position: fixed !important; bottom: 0; left: 0; right: 0; width: 100% !important; max-height: 55vh; overflow-y: auto; border-radius: 18px 18px 0 0; z-index: 500; }
+ table { font-size: 11px !important; }
+ th, td { padding: 6px 5px !important; }
+ .modal-box { width: 95vw !important; max-width: 95vw !important; padding: 18px 14px !important; }
+ h1 { font-size: 15px !important; }
+ h2 { font-size: 13px !important; }
+ .nav-btn { font-size: 11px !important; padding: 8px 10px !important; }
+ #notificationContainer { max-width: 95vw !important; right: 8px !important; top: 10px !important; }
+ .notif-toast { padding: 11px 13px !important; }
+ }
+ @media (max-width: 400px) {
+ .kpi-grid { grid-template-columns: 1fr !important; }
+ }
+ @media (hover: none) {
+ .nav-btn, button, .prod-btn { min-height: 42px; }
+ input[type=text], input[type=password], input[type=tel], input[type=time], select, textarea { font-size: 16px !important; }
+ }
+ #registerPanel, .main-wrapper { -webkit-overflow-scrolling: touch; }
+
  /* Notification Toast System */
  #notificationContainer { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; max-width: 380px; pointer-events: none; }
  .notif-toast { pointer-events: all; background: rgba(255,255,255,0.97); border-radius: 10px; padding: 14px 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); border-left: 5px solid #f39c12; display: flex; flex-direction: column; gap: 6px; animation: notifSlideIn 0.4s cubic-bezier(.25,.8,.25,1); position: relative; }
@@ -500,84 +526,129 @@
  </div>
 
  <!-- LOGIN SCREEN -->
- <div id="loginScreen" style="position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);z-index:9999;align-items:center;justify-content:center;flex-direction:column;display:flex;">
- <div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 36px;width:340px;max-width:95%;box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+ <div id="loginScreen" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;">
+ <!-- Background photo -->
+ <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1920&q=80');background-size:cover;background-position:center;filter:brightness(0.45) saturate(1.1);"></div>
+ <!-- Soft overlay -->
+ <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,10,40,0.55) 0%,rgba(30,20,60,0.45) 50%,rgba(5,30,80,0.55) 100%);"></div>
+ <!-- Login card -->
+ <div style="position:relative;z-index:2;background:rgba(255,255,255,0.08);backdrop-filter:blur(32px) saturate(1.8);-webkit-backdrop-filter:blur(32px) saturate(1.8);border:1.5px solid rgba(255,255,255,0.22);border-radius:24px;padding:40px 36px;width:360px;max-width:92vw;box-shadow:0 32px 80px rgba(0,0,0,0.45),0 0 0 1px rgba(255,255,255,0.05) inset,0 1px 0 rgba(255,255,255,0.15) inset;">
  <div style="text-align:center;margin-bottom:28px;">
- <div style="width:60px;height:60px;background:linear-gradient(135deg,#4361ee,#7209b7);border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+ <div style="width:62px;height:62px;background:linear-gradient(135deg,rgba(67,97,238,0.9),rgba(114,9,183,0.9));border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(67,97,238,0.5);border:2px solid rgba(255,255,255,0.2);">
  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
  </div>
- <h2 style="color:#fff;font-size:20px;margin:0 0 4px;">Mfumo wa Biashara</h2>
- <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0;">Ingia kwa akaunti yako</p>
+ <h2 style="color:#fff;font-size:21px;font-weight:700;margin:0 0 4px;text-shadow:0 2px 10px rgba(0,0,0,0.3);">Mfumo wa Biashara</h2>
+ <p style="color:rgba(255,255,255,0.55);font-size:12px;margin:0;">Ingia kwa akaunti yako</p>
  </div>
- <div id="loginError" style="display:none;background:rgba(231,76,60,0.15);border:1px solid #e74c3c;border-radius:8px;padding:10px 14px;margin-bottom:14px;color:#ff6b6b;font-size:12px;text-align:center;"></div>
- <input type="text" id="loginUserId" placeholder="User ID (mf: user001)" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:rgba(255,255,255,0.08);color:#fff;font-size:14px;margin-bottom:12px;box-sizing:border-box;outline:none;">
- <input type="password" id="loginPassword" placeholder="Nywila" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:rgba(255,255,255,0.08);color:#fff;font-size:14px;margin-bottom:14px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter')doLogin()">
+ <div id="loginError" style="display:none;background:rgba(231,76,60,0.18);border:1px solid rgba(231,76,60,0.5);border-radius:10px;padding:10px 14px;margin-bottom:14px;color:#ff8080;font-size:12px;text-align:center;"></div>
+ <input type="text" id="loginUserId" placeholder="User ID (mf: user001)" style="width:100%;padding:13px 15px;border:1px solid rgba(255,255,255,0.18);border-radius:12px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;margin-bottom:12px;box-sizing:border-box;outline:none;transition:border .2s;" onfocus="this.style.border='1px solid rgba(255,255,255,0.45)'" onblur="this.style.border='1px solid rgba(255,255,255,0.18)'">
+ <input type="password" id="loginPassword" placeholder="Nywila" style="width:100%;padding:13px 15px;border:1px solid rgba(255,255,255,0.18);border-radius:12px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;margin-bottom:14px;box-sizing:border-box;outline:none;transition:border .2s;" onfocus="this.style.border='1px solid rgba(255,255,255,0.45)'" onblur="this.style.border='1px solid rgba(255,255,255,0.18)'" onkeydown="if(event.key==='Enter')doLogin()">
  <label style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:20px;cursor:pointer;">
  <input type="checkbox" id="rememberMe" checked style="width:14px;height:14px;accent-color:#4361ee;cursor:pointer;">
  Nikumbuke (Usiulize nywila mara nyingine)
  </label>
- <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:13px;background:linear-gradient(135deg,#4361ee,#7209b7);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">Ingia</button>
- <p style="color:rgba(255,255,255,0.3);font-size:11px;text-align:center;margin-top:20px;">Wasiliana na msimamizi wako kupata akaunti</p>
- <p style="text-align:center;margin-top:10px;">
- <a href="#" onclick="showRegisterPanel();return false;" style="color:#7c9ef8;font-size:13px;text-decoration:none;font-weight:600;border-bottom:1px dashed rgba(124,158,248,0.5);padding-bottom:2px;">Hauna akaunti? Jisajili hapa</a>
+ <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,#4361ee,#7209b7);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(67,97,238,0.4);transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 12px 28px rgba(67,97,238,0.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 8px 24px rgba(67,97,238,0.4)'">Ingia</button>
+ <p style="color:rgba(255,255,255,0.28);font-size:11px;text-align:center;margin-top:18px;margin-bottom:6px;">Bado huna akaunti?</p>
+ <p style="text-align:center;margin:0;">
+ <a href="#" onclick="showRegisterPanel();return false;" style="color:#a5c4ff;font-size:13px;text-decoration:none;font-weight:600;border-bottom:1px dashed rgba(165,196,255,0.45);padding-bottom:2px;">Hauna akaunti? Jisajili hapa</a>
  </p>
  </div>
  </div>
 
- <!-- REGISTRATION PANEL -->
- <div id="registerPanel" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
- <div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:36px 32px;width:380px;max-width:95%;margin:30px auto;box-shadow:0 25px 60px rgba(0,0,0,0.5);">
- <div style="text-align:center;margin-bottom:24px;">
- <div style="width:56px;height:56px;background:linear-gradient(135deg,#2ecc71,#1a9650);border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
- <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+ <!-- REGISTRATION PANEL — 3-Step Wizard -->
+ <div id="registerPanel" style="display:none;position:fixed;inset:0;z-index:10000;align-items:flex-start;justify-content:center;overflow-y:auto;">
+ <!-- Same background photo -->
+ <div style="position:fixed;inset:0;background-image:url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1920&q=80');background-size:cover;background-position:center;filter:brightness(0.35) saturate(1.1);z-index:0;"></div>
+ <div style="position:fixed;inset:0;background:linear-gradient(160deg,rgba(5,15,40,0.6),rgba(20,10,50,0.5));z-index:0;"></div>
+ <div style="position:relative;z-index:2;background:rgba(255,255,255,0.09);backdrop-filter:blur(32px) saturate(1.8);-webkit-backdrop-filter:blur(32px) saturate(1.8);border:1.5px solid rgba(255,255,255,0.2);border-radius:24px;padding:28px 24px 24px;width:420px;max-width:94vw;margin:20px auto 30px;box-shadow:0 32px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.05) inset,0 1px 0 rgba(255,255,255,0.12) inset;box-sizing:border-box;">
+
+ <!-- Header -->
+ <div style="text-align:center;margin-bottom:20px;">
+ <div style="width:52px;height:52px;background:linear-gradient(135deg,rgba(46,204,113,0.9),rgba(26,150,80,0.9));border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(46,204,113,0.4);border:2px solid rgba(255,255,255,0.2);">
+ <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
  </div>
- <h2 style="color:#fff;font-size:19px;margin:0 0 4px;">Fungua Akaunti Mpya</h2>
- <p style="color:rgba(255,255,255,0.45);font-size:12px;margin:0;">Jaza taarifa zako ili kuanza kutumia mfumo</p>
- </div>
- <div id="regError" style="display:none;background:rgba(231,76,60,0.15);border:1px solid #e74c3c;border-radius:8px;padding:10px 14px;margin-bottom:14px;color:#ff6b6b;font-size:12px;text-align:center;"></div>
- <div id="regSuccess" style="display:none;background:rgba(46,204,113,0.15);border:1px solid #2ecc71;border-radius:8px;padding:12px 14px;margin-bottom:14px;color:#2ecc71;font-size:13px;text-align:center;line-height:1.6;"></div>
-
- <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Jina Lako Kamili *</label>
- <input type="text" id="regName" placeholder="Mfano: John Mwangi" style="width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;margin-bottom:12px;box-sizing:border-box;outline:none;">
-
- <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Jina la Biashara *</label>
- <input type="text" id="regBizName" placeholder="Mfano: JUJU Shop" style="width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;margin-bottom:12px;box-sizing:border-box;outline:none;">
-
- <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Nambari ya Simu *</label>
- <input type="tel" id="regPhone" placeholder="Mfano: 0712345678" style="width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;margin-bottom:12px;box-sizing:border-box;outline:none;">
-
- <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Siku za Kufanya Kazi *</label>
- <div id="regWorkDays" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
- <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumatatu" style="accent-color:#4361ee;"> Jumatatu</label>
- <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumanne" style="accent-color:#4361ee;"> Jumanne</label>
- <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumatano" style="accent-color:#4361ee;"> Jumatano</label>
- <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Alhamisi" style="accent-color:#4361ee;"> Alhamisi</label>
- <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Ijumaa" style="accent-color:#4361ee;"> Ijumaa</label>
- <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumamosi" style="accent-color:#4361ee;"> Jumamosi</label>
- <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumapili" style="accent-color:#4361ee;"> Jumapili</label>
+ <h2 style="color:#fff;font-size:18px;font-weight:700;margin:0 0 3px;">Fungua Akaunti Mpya</h2>
+ <p style="color:rgba(255,255,255,0.45);font-size:11px;margin:0;">Hatua <span id="regStepNum">1</span> kati ya 3</p>
  </div>
 
- <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Muda wa Kufungua Duka</label>
- <div style="display:flex;gap:10px;margin-bottom:12px;">
- <div style="flex:1;">
- <label style="color:rgba(255,255,255,0.45);font-size:11px;display:block;margin-bottom:4px;">Saa ya Kufungua</label>
- <input type="time" id="regOpenTime" value="08:00" style="width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;box-sizing:border-box;outline:none;">
+ <!-- Step dots -->
+ <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:22px;">
+ <div id="dot1" style="width:32px;height:5px;border-radius:3px;background:#4361ee;transition:all .3s;"></div>
+ <div id="dot2" style="width:12px;height:5px;border-radius:3px;background:rgba(255,255,255,0.2);transition:all .3s;"></div>
+ <div id="dot3" style="width:12px;height:5px;border-radius:3px;background:rgba(255,255,255,0.2);transition:all .3s;"></div>
  </div>
- <div style="flex:1;">
- <label style="color:rgba(255,255,255,0.45);font-size:11px;display:block;margin-bottom:4px;">Saa ya Kufunga</label>
- <input type="time" id="regCloseTime" value="18:00" style="width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;box-sizing:border-box;outline:none;">
+
+ <div id="regError" style="display:none;background:rgba(231,76,60,0.18);border:1px solid rgba(231,76,60,0.5);border-radius:10px;padding:10px 14px;margin-bottom:14px;color:#ff8080;font-size:12px;text-align:center;"></div>
+ <div id="regSuccess" style="display:none;background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.4);border-radius:10px;padding:14px;margin-bottom:14px;color:#7fffb8;font-size:13px;text-align:center;line-height:1.7;"></div>
+
+ <!-- STEP 1: Personal Info -->
+ <div id="regStep1">
+ <p style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin:0 0 14px;font-weight:600;">Hatua 1 — Taarifa Zako Binafsi</p>
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;">Jina Lako Kamili *</label>
+ <input type="text" id="regName" placeholder="Mfano: John Mwangi" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,0.16);border-radius:11px;background:rgba(255,255,255,0.09);color:#fff;font-size:13px;margin-bottom:13px;box-sizing:border-box;outline:none;" onfocus="this.style.border='1px solid rgba(255,255,255,0.42)'" onblur="this.style.border='1px solid rgba(255,255,255,0.16)'">
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;">Nambari ya Simu *</label>
+ <input type="tel" id="regPhone" placeholder="Mfano: 0712345678" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,0.16);border-radius:11px;background:rgba(255,255,255,0.09);color:#fff;font-size:13px;margin-bottom:13px;box-sizing:border-box;outline:none;" onfocus="this.style.border='1px solid rgba(255,255,255,0.42)'" onblur="this.style.border='1px solid rgba(255,255,255,0.16)'">
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;">Jina la Biashara *</label>
+ <input type="text" id="regBizName" placeholder="Mfano: JUJU Shop" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,0.16);border-radius:11px;background:rgba(255,255,255,0.09);color:#fff;font-size:13px;margin-bottom:20px;box-sizing:border-box;outline:none;" onfocus="this.style.border='1px solid rgba(255,255,255,0.42)'" onblur="this.style.border='1px solid rgba(255,255,255,0.16)'">
+
+ <button onclick="regNextStep(2)" style="width:100%;padding:13px;background:linear-gradient(135deg,#4361ee,#7209b7);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(67,97,238,0.4);">Endelea</button>
+ </div>
+
+ <!-- STEP 2: Work Days & Hours -->
+ <div id="regStep2" style="display:none;">
+ <p style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin:0 0 14px;font-weight:600;">Hatua 2 — Muda wa Biashara</p>
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:8px;">Siku za Kufanya Kazi *</label>
+ <div id="regWorkDays" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px;">
+ <label style="color:rgba(255,255,255,0.8);font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,0.07);padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumatatu" style="accent-color:#4361ee;width:14px;height:14px;"> Jumatatu</label>
+ <label style="color:rgba(255,255,255,0.8);font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,0.07);padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumanne" style="accent-color:#4361ee;width:14px;height:14px;"> Jumanne</label>
+ <label style="color:rgba(255,255,255,0.8);font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,0.07);padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumatano" style="accent-color:#4361ee;width:14px;height:14px;"> Jumatano</label>
+ <label style="color:rgba(255,255,255,0.8);font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,0.07);padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Alhamisi" style="accent-color:#4361ee;width:14px;height:14px;"> Alhamisi</label>
+ <label style="color:rgba(255,255,255,0.8);font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,0.07);padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Ijumaa" style="accent-color:#4361ee;width:14px;height:14px;"> Ijumaa</label>
+ <label style="color:rgba(255,255,255,0.8);font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,0.07);padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumamosi" style="accent-color:#4361ee;width:14px;height:14px;"> Jumamosi</label>
+ <label style="color:rgba(255,255,255,0.8);font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,0.07);padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);" colspan="2"><input type="checkbox" value="Jumapili" style="accent-color:#4361ee;width:14px;height:14px;"> Jumapili</label>
+ </div>
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:8px;">Masaa ya Kufanya Kazi</label>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+ <div>
+ <label style="color:rgba(255,255,255,0.4);font-size:10px;display:block;margin-bottom:4px;">Saa ya Kufungua</label>
+ <input type="time" id="regOpenTime" value="08:00" style="width:100%;padding:11px 12px;border:1px solid rgba(255,255,255,0.16);border-radius:11px;background:rgba(255,255,255,0.09);color:#fff;font-size:13px;box-sizing:border-box;outline:none;">
+ </div>
+ <div>
+ <label style="color:rgba(255,255,255,0.4);font-size:10px;display:block;margin-bottom:4px;">Saa ya Kufunga</label>
+ <input type="time" id="regCloseTime" value="18:00" style="width:100%;padding:11px 12px;border:1px solid rgba(255,255,255,0.16);border-radius:11px;background:rgba(255,255,255,0.09);color:#fff;font-size:13px;box-sizing:border-box;outline:none;">
+ </div>
+ </div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+ <button onclick="regNextStep(1)" style="padding:13px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:12px;font-size:13px;cursor:pointer;">Rudi Nyuma</button>
+ <button onclick="regNextStep(3)" style="padding:13px;background:linear-gradient(135deg,#4361ee,#7209b7);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">Endelea</button>
  </div>
  </div>
 
- <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Weka Nywila *</label>
- <input type="password" id="regPass" placeholder="Angalau herufi 4" style="width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;margin-bottom:12px;box-sizing:border-box;outline:none;">
+ <!-- STEP 3: Password -->
+ <div id="regStep3" style="display:none;">
+ <p style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin:0 0 14px;font-weight:600;">Hatua 3 — Weka Nywila</p>
 
- <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Thibitisha Nywila *</label>
- <input type="password" id="regPass2" placeholder="Rudia nywila" style="width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;margin-bottom:18px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter')doSelfRegister()">
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;">Nywila *</label>
+ <input type="password" id="regPass" placeholder="Angalau herufi 4" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,0.16);border-radius:11px;background:rgba(255,255,255,0.09);color:#fff;font-size:13px;margin-bottom:13px;box-sizing:border-box;outline:none;" onfocus="this.style.border='1px solid rgba(255,255,255,0.42)'" onblur="this.style.border='1px solid rgba(255,255,255,0.16)'">
 
- <button onclick="doSelfRegister()" id="regBtn" style="width:100%;padding:13px;background:linear-gradient(135deg,#2ecc71,#1a9650);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;">Jisajili Sasa</button>
- <button onclick="hideRegisterPanel()" style="width:100%;padding:11px;background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:13px;cursor:pointer;">Rudi Nyuma (Ingia)</button>
- <p style="color:rgba(255,255,255,0.25);font-size:10px;text-align:center;margin-top:14px;line-height:1.5;">Akaunti mpya itasubiri idhini ya msimamizi. Utapata User ID yako baada ya uthibitisho.</p>
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;">Thibitisha Nywila *</label>
+ <input type="password" id="regPass2" placeholder="Rudia nywila" style="width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,0.16);border-radius:11px;background:rgba(255,255,255,0.09);color:#fff;font-size:13px;margin-bottom:20px;box-sizing:border-box;outline:none;" onfocus="this.style.border='1px solid rgba(255,255,255,0.42)'" onblur="this.style.border='1px solid rgba(255,255,255,0.16)'" onkeydown="if(event.key==='Enter')doSelfRegister()">
+
+ <p style="color:rgba(255,255,255,0.22);font-size:10px;margin:0 0 16px;line-height:1.6;text-align:center;">Akaunti mpya itasubiri idhini ya msimamizi. Utapata User ID yako baada ya uthibitisho.</p>
+
+ <button onclick="doSelfRegister()" id="regBtn" style="width:100%;padding:13px;background:linear-gradient(135deg,#2ecc71,#1a9650);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(46,204,113,0.35);margin-bottom:10px;">Jisajili Sasa</button>
+ <button onclick="regNextStep(2)" style="width:100%;padding:11px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.14);border-radius:12px;font-size:13px;cursor:pointer;">Rudi Nyuma</button>
+ </div>
+
+ <!-- Back to login link -->
+ <p style="text-align:center;margin-top:16px;margin-bottom:0;">
+ <a href="#" onclick="hideRegisterPanel();return false;" style="color:rgba(165,196,255,0.7);font-size:12px;text-decoration:none;">Tayari una akaunti? Ingia hapa</a>
+ </p>
  </div>
  </div>
 
@@ -2658,10 +2729,51 @@
  document.getElementById('registerPanel').style.display = 'flex';
  document.getElementById('regError').style.display = 'none';
  document.getElementById('regSuccess').style.display = 'none';
+ regNextStep(1);
  }
  function hideRegisterPanel() {
  document.getElementById('registerPanel').style.display = 'none';
  }
+
+ function regNextStep(step) {
+ var errEl = document.getElementById('regError');
+ errEl.style.display = 'none';
+
+ // Validate before advancing
+ if (step === 2) {
+ var name = (document.getElementById('regName').value || '').trim();
+ var phone = (document.getElementById('regPhone').value || '').trim();
+ var bizName = (document.getElementById('regBizName').value || '').trim();
+ if (!name) { errEl.innerText = 'Tafadhali weka jina lako kamili.'; errEl.style.display = 'block'; return; }
+ if (!phone || !/^[0-9+\s\-]{7,15}$/.test(phone)) { errEl.innerText = 'Weka nambari sahihi ya simu (mf: 0712345678).'; errEl.style.display = 'block'; return; }
+ if (!bizName) { errEl.innerText = 'Tafadhali weka jina la biashara yako.'; errEl.style.display = 'block'; return; }
+ }
+ if (step === 3) {
+ var days = [];
+ document.querySelectorAll('#regWorkDays input[type=checkbox]:checked').forEach(function(cb){ days.push(cb.value); });
+ if (days.length === 0) { errEl.innerText = 'Chagua angalau siku moja ya kufanya kazi.'; errEl.style.display = 'block'; return; }
+ }
+
+ // Show correct step
+ [1,2,3].forEach(function(s){
+ var el = document.getElementById('regStep'+s);
+ if (el) el.style.display = (s === step ? 'block' : 'none');
+ });
+ document.getElementById('regStepNum').innerText = step;
+
+ // Update dots
+ var dots = [document.getElementById('dot1'), document.getElementById('dot2'), document.getElementById('dot3')];
+ dots.forEach(function(d, i){
+ if (!d) return;
+ d.style.width = (i + 1 === step) ? '32px' : '12px';
+ d.style.background = (i + 1 <= step) ? '#4361ee' : 'rgba(255,255,255,0.2)';
+ });
+
+ // Scroll to top of panel
+ var panel = document.getElementById('registerPanel');
+ if (panel) panel.scrollTop = 0;
+ }
+
 
  function doSelfRegister() {
  var name = document.getElementById('regName').value.trim();
