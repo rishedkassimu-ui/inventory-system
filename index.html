@@ -518,6 +518,66 @@
  </label>
  <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:13px;background:linear-gradient(135deg,#4361ee,#7209b7);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">Ingia</button>
  <p style="color:rgba(255,255,255,0.3);font-size:11px;text-align:center;margin-top:20px;">Wasiliana na msimamizi wako kupata akaunti</p>
+ <p style="text-align:center;margin-top:10px;">
+ <a href="#" onclick="showRegisterPanel();return false;" style="color:#7c9ef8;font-size:13px;text-decoration:none;font-weight:600;border-bottom:1px dashed rgba(124,158,248,0.5);padding-bottom:2px;">Hauna akaunti? Jisajili hapa</a>
+ </p>
+ </div>
+ </div>
+
+ <!-- REGISTRATION PANEL -->
+ <div id="registerPanel" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);z-index:10000;align-items:center;justify-content:center;overflow-y:auto;">
+ <div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:36px 32px;width:380px;max-width:95%;margin:30px auto;box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+ <div style="text-align:center;margin-bottom:24px;">
+ <div style="width:56px;height:56px;background:linear-gradient(135deg,#2ecc71,#1a9650);border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+ <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+ </div>
+ <h2 style="color:#fff;font-size:19px;margin:0 0 4px;">Fungua Akaunti Mpya</h2>
+ <p style="color:rgba(255,255,255,0.45);font-size:12px;margin:0;">Jaza taarifa zako ili kuanza kutumia mfumo</p>
+ </div>
+ <div id="regError" style="display:none;background:rgba(231,76,60,0.15);border:1px solid #e74c3c;border-radius:8px;padding:10px 14px;margin-bottom:14px;color:#ff6b6b;font-size:12px;text-align:center;"></div>
+ <div id="regSuccess" style="display:none;background:rgba(46,204,113,0.15);border:1px solid #2ecc71;border-radius:8px;padding:12px 14px;margin-bottom:14px;color:#2ecc71;font-size:13px;text-align:center;line-height:1.6;"></div>
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Jina Lako Kamili *</label>
+ <input type="text" id="regName" placeholder="Mfano: John Mwangi" style="width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;margin-bottom:12px;box-sizing:border-box;outline:none;">
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Jina la Biashara *</label>
+ <input type="text" id="regBizName" placeholder="Mfano: JUJU Shop" style="width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;margin-bottom:12px;box-sizing:border-box;outline:none;">
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Nambari ya Simu *</label>
+ <input type="tel" id="regPhone" placeholder="Mfano: 0712345678" style="width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;margin-bottom:12px;box-sizing:border-box;outline:none;">
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Siku za Kufanya Kazi *</label>
+ <div id="regWorkDays" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+ <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumatatu" style="accent-color:#4361ee;"> Jumatatu</label>
+ <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumanne" style="accent-color:#4361ee;"> Jumanne</label>
+ <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumatano" style="accent-color:#4361ee;"> Jumatano</label>
+ <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Alhamisi" style="accent-color:#4361ee;"> Alhamisi</label>
+ <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Ijumaa" style="accent-color:#4361ee;"> Ijumaa</label>
+ <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumamosi" style="accent-color:#4361ee;"> Jumamosi</label>
+ <label style="color:rgba(255,255,255,0.75);font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);"><input type="checkbox" value="Jumapili" style="accent-color:#4361ee;"> Jumapili</label>
+ </div>
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Muda wa Kufungua Duka</label>
+ <div style="display:flex;gap:10px;margin-bottom:12px;">
+ <div style="flex:1;">
+ <label style="color:rgba(255,255,255,0.45);font-size:11px;display:block;margin-bottom:4px;">Saa ya Kufungua</label>
+ <input type="time" id="regOpenTime" value="08:00" style="width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;box-sizing:border-box;outline:none;">
+ </div>
+ <div style="flex:1;">
+ <label style="color:rgba(255,255,255,0.45);font-size:11px;display:block;margin-bottom:4px;">Saa ya Kufunga</label>
+ <input type="time" id="regCloseTime" value="18:00" style="width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;box-sizing:border-box;outline:none;">
+ </div>
+ </div>
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Weka Nywila *</label>
+ <input type="password" id="regPass" placeholder="Angalau herufi 4" style="width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;margin-bottom:12px;box-sizing:border-box;outline:none;">
+
+ <label style="color:rgba(255,255,255,0.6);font-size:11px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Thibitisha Nywila *</label>
+ <input type="password" id="regPass2" placeholder="Rudia nywila" style="width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,0.15);border-radius:9px;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;margin-bottom:18px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter')doSelfRegister()">
+
+ <button onclick="doSelfRegister()" id="regBtn" style="width:100%;padding:13px;background:linear-gradient(135deg,#2ecc71,#1a9650);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;">Jisajili Sasa</button>
+ <button onclick="hideRegisterPanel()" style="width:100%;padding:11px;background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:13px;cursor:pointer;">Rudi Nyuma (Ingia)</button>
+ <p style="color:rgba(255,255,255,0.25);font-size:10px;text-align:center;margin-top:14px;line-height:1.5;">Akaunti mpya itasubiri idhini ya msimamizi. Utapata User ID yako baada ya uthibitisho.</p>
  </div>
  </div>
 
@@ -561,6 +621,19 @@
  </div>
  <div id="saUsersList" style="padding:16px;color:rgba(255,255,255,0.5);font-size:13px;">Inapakia...</div>
  </div>
+
+ <!-- REGISTRATION REQUESTS -->
+ <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(46,204,113,0.3);border-radius:14px;overflow:hidden;margin-top:20px;">
+ <div style="padding:18px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+ <div>
+ <h3 style="color:#2ecc71;font-size:15px;margin:0;">Maombi ya Usajili Mapya</h3>
+ <p style="color:rgba(255,255,255,0.35);font-size:11px;margin:4px 0 0;">Watu walioomba kujiandikisha kwenye mfumo</p>
+ </div>
+ <button onclick="saLoadRegistrations()" style="background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:7px 16px;border-radius:7px;cursor:pointer;font-size:12px;">Refresh</button>
+ </div>
+ <div id="saRegistrationsList" style="padding:16px;color:rgba(255,255,255,0.5);font-size:13px;">Inapakia maombi...</div>
+ </div>
+
  </div>
  </div>
 
@@ -906,6 +979,7 @@
  document.getElementById('adminMain').style.display = 'none';
  document.getElementById('superAdminPortal').style.display = 'block';
  saLoadUsers();
+ saLoadRegistrations();
  }
 
  function saLoadUsers() {
@@ -947,18 +1021,22 @@
  var statusBadge = isLocked
  ? '<span style="background:#e74c3c;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">IMEZUIWA</span>'
  : '<span style="background:#2ecc71;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">HAI</span>';
+ var passDisplay = u.password
+ ? '<span style="font-family:monospace;background:rgba(255,255,255,0.07);padding:2px 8px;border-radius:4px;font-size:12px;letter-spacing:1px;color:#f39c12;">' + u.password + '</span>'
+ : '<span style="color:rgba(255,255,255,0.3);font-size:11px;">—</span>';
  return '<tr style="border-bottom:1px solid rgba(255,255,255,0.06);">' +
- '<td style="padding:12px 10px;color:#fff;font-weight:700;">' + uid + '</td>' +
- '<td style="padding:12px 10px;color:rgba(255,255,255,0.8);">' + (u.bizName||'—') + '</td>' +
- '<td style="padding:12px 10px;color:rgba(255,255,255,0.6);">' + (u.name||'—') + '</td>' +
- '<td style="padding:12px 10px;">' + statusBadge + '</td>' +
- '<td style="padding:12px 10px;color:' + daysColor + ';font-weight:700;">' + expiryStr + (daysLeft !== null ? ' <small>(' + daysLeft + ' siku)</small>' : '') + '</td>' +
- '<td style="padding:12px 10px;">' +
- '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+ '<td style="padding:10px 8px;color:#7c9ef8;font-weight:700;font-family:monospace;font-size:13px;">' + uid + '</td>' +
+ '<td style="padding:10px 8px;">' + passDisplay + '</td>' +
+ '<td style="padding:10px 8px;color:rgba(255,255,255,0.8);">' + (u.bizName||'—') + '</td>' +
+ '<td style="padding:10px 8px;color:rgba(255,255,255,0.6);">' + (u.name||'—') + '</td>' +
+ '<td style="padding:10px 8px;">' + statusBadge + '</td>' +
+ '<td style="padding:10px 8px;color:' + daysColor + ';font-weight:700;font-size:12px;">' + expiryStr + (daysLeft !== null ? '<br><small>(' + daysLeft + ' siku)</small>' : '') + '</td>' +
+ '<td style="padding:10px 8px;">' +
+ '<div style="display:flex;gap:5px;flex-wrap:wrap;">' +
  (isLocked
  ? '<button onclick="saToggleLock(\'' + uid + '\',false)" style="background:#2ecc71;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600;">Fungua</button>'
  : '<button onclick="saToggleLock(\'' + uid + '\',true)" style="background:#e74c3c;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600;">Zuia</button>') +
- '<button onclick="saRenew(\'' + uid + '\')" style="background:#4361ee;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600;">Lipia/Risha</button>' +
+ '<button onclick="saRenew(\'' + uid + '\')" style="background:#4361ee;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600;">Lipia</button>' +
  '<button onclick="saResetPass(\'' + uid + '\')" style="background:#f39c12;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600;">Nywila</button>' +
  '<button onclick="saDeleteUser(\'' + uid + '\')" style="background:rgba(231,76,60,0.3);color:#ff6b6b;border:1px solid #e74c3c;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;">Futa</button>' +
  '</div></td></tr>';
@@ -966,8 +1044,8 @@
 
  list.innerHTML = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;box-shadow:none;margin:0;">' +
  '<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.15);">' +
- ['User ID','Biashara','Mmiliki','Hali','Tarehe ya Mwisho','Vitendo'].map(function(h){
- return '<th style="padding:10px;color:rgba(255,255,255,0.5);text-align:left;font-size:11px;text-transform:uppercase;">' + h + '</th>';
+ ['User ID','Nywila','Biashara','Mmiliki','Hali','Tarehe ya Mwisho','Vitendo'].map(function(h){
+ return '<th style="padding:10px 8px;color:rgba(255,255,255,0.5);text-align:left;font-size:11px;text-transform:uppercase;white-space:nowrap;">' + h + '</th>';
  }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
  });
  }
@@ -2486,6 +2564,168 @@
  }
  }
  }
+
+ // ================================================================
+ // REGISTRATION REQUESTS — Super Admin
+ // ================================================================
+ function saLoadRegistrations() {
+ var el = document.getElementById('saRegistrationsList');
+ if (!el) return;
+ if (!useFirebase) { el.innerHTML = '<p style="color:rgba(255,255,255,0.4);">Firebase haipatikani.</p>'; return; }
+ el.innerHTML = '<p style="color:rgba(255,255,255,0.4);font-size:13px;">Inapakia...</p>';
+ firebase.database().ref('registrations').once('value', function(snap) {
+ var regs = snap.val();
+ if (!regs || Object.keys(regs).length === 0) {
+ el.innerHTML = '<p style="color:rgba(255,255,255,0.35);font-size:13px;padding:10px 0;">Hakuna maombi mapya ya usajili kwa sasa.</p>';
+ return;
+ }
+ var rows = '';
+ Object.entries(regs).forEach(function(entry) {
+ var rid = entry[0], r = entry[1];
+ var isPending = r.status === 'pending';
+ var statusColor = isPending ? '#f39c12' : (r.status === 'approved' ? '#2ecc71' : '#e74c3c');
+ var statusLabel = isPending ? 'Inasubiri' : (r.status === 'approved' ? 'Imeidhinishwa' : 'Imekataliwa');
+ rows += '<tr>' +
+ '<td style="padding:10px 8px;color:rgba(255,255,255,0.8);font-size:12px;">' + (r.name||'—') + '</td>' +
+ '<td style="padding:10px 8px;color:rgba(255,255,255,0.8);font-size:12px;">' + (r.bizName||'—') + '</td>' +
+ '<td style="padding:10px 8px;color:rgba(255,255,255,0.6);font-size:11px;">' + (r.phone||'—') + '</td>' +
+ '<td style="padding:10px 8px;color:rgba(255,255,255,0.6);font-size:11px;">' + (r.workDays||'—') + '</td>' +
+ '<td style="padding:10px 8px;color:rgba(255,255,255,0.6);font-size:11px;">' + (r.workHours||'—') + '</td>' +
+ '<td style="padding:10px 8px;"><span style="color:' + statusColor + ';font-size:11px;font-weight:700;">' + statusLabel + '</span></td>' +
+ '<td style="padding:10px 8px;">' +
+ (isPending ?
+ '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+ '<button onclick="saApproveRegistration(\'' + rid + '\')" style="background:#2ecc71;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;">Idhinisha</button>' +
+ '<button onclick="saRejectRegistration(\'' + rid + '\')" style="background:#e74c3c;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;">Kataa</button>' +
+ '</div>' : '—') +
+ '</td>' +
+ '</tr>';
+ });
+ el.innerHTML = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">' +
+ '<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1);">' +
+ ['Jina','Biashara','Simu','Siku za Kazi','Masaa','Hali','Vitendo'].map(function(h){
+ return '<th style="padding:8px;color:rgba(255,255,255,0.4);text-align:left;font-size:10px;text-transform:uppercase;">' + h + '</th>';
+ }).join('') +
+ '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+ });
+ }
+
+ function saApproveRegistration(rid) {
+ if (!useFirebase) return;
+ firebase.database().ref('registrations/' + rid).once('value', function(snap) {
+ var r = snap.val();
+ if (!r) { alert('Ombi halipatikani.'); return; }
+ // Auto-generate a clean User ID from name
+ var autoUid = r.name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'') + '_' + Date.now().toString().slice(-4);
+ var customUid = prompt('Thibitisha au badilisha User ID kwa mtumiaji huyu:\n(Itumie herufi, nambari na _ pekee)', autoUid);
+ if (!customUid) return;
+ customUid = customUid.trim();
+ if (!/^[a-zA-Z0-9_]+$/.test(customUid)) { alert('User ID si sahihi. Tumia herufi, nambari na _ pekee.'); return; }
+
+ firebase.database().ref('users/' + customUid).once('value', function(snapU) {
+ if (snapU.val()) { alert('User ID "' + customUid + '" tayari ipo. Chagua nyingine.'); return; }
+ var expiry = new Date(); expiry.setDate(expiry.getDate() + 30);
+ var expiryStr = expiry.toISOString().split('T')[0];
+ firebase.database().ref('users/' + customUid).set({
+ password: r.password,
+ bizName: r.bizName,
+ name: r.name,
+ phone: r.phone,
+ workDays: r.workDays,
+ workHours: r.workHours,
+ bizId: r.bizId,
+ status: 'active',
+ createdAt: new Date().toISOString(),
+ expiryDate: expiryStr
+ }).then(function() {
+ firebase.database().ref('registrations/' + rid).update({ status: 'approved', approvedUid: customUid });
+ saLoadRegistrations();
+ saLoadUsers();
+ alert('Mtumiaji "' + r.name + '" ameidhinishwa!\nUser ID: ' + customUid + '\nNywila: ' + r.password + '\nBiz ID: ' + r.bizId);
+ });
+ });
+ });
+ }
+
+ function saRejectRegistration(rid) {
+ if (!confirm('Una uhakika unataka kukataa ombi hili?')) return;
+ firebase.database().ref('registrations/' + rid).update({ status: 'rejected' });
+ saLoadRegistrations();
+ }
+
+ 
+ function showRegisterPanel() {
+ document.getElementById('registerPanel').style.display = 'flex';
+ document.getElementById('regError').style.display = 'none';
+ document.getElementById('regSuccess').style.display = 'none';
+ }
+ function hideRegisterPanel() {
+ document.getElementById('registerPanel').style.display = 'none';
+ }
+
+ function doSelfRegister() {
+ var name = document.getElementById('regName').value.trim();
+ var bizName = document.getElementById('regBizName').value.trim();
+ var phone = document.getElementById('regPhone').value.trim();
+ var pass = document.getElementById('regPass').value;
+ var pass2 = document.getElementById('regPass2').value;
+ var openTime = document.getElementById('regOpenTime').value;
+ var closeTime = document.getElementById('regCloseTime').value;
+ var errEl = document.getElementById('regError');
+ var sucEl = document.getElementById('regSuccess');
+ var btn = document.getElementById('regBtn');
+
+ // Collect selected work days
+ var days = [];
+ document.querySelectorAll('#regWorkDays input[type=checkbox]:checked').forEach(function(cb){ days.push(cb.value); });
+
+ errEl.style.display = 'none'; sucEl.style.display = 'none';
+
+ // Validation
+ if (!name || !bizName || !phone) { errEl.innerText = 'Tafadhali jaza Jina, Jina la Biashara na Nambari ya Simu.'; errEl.style.display = 'block'; return; }
+ if (days.length === 0) { errEl.innerText = 'Chagua angalau siku moja ya kufanya kazi.'; errEl.style.display = 'block'; return; }
+ if (!pass || pass.length < 4) { errEl.innerText = 'Nywila lazima iwe na herufi angalau 4.'; errEl.style.display = 'block'; return; }
+ if (pass !== pass2) { errEl.innerText = 'Nywila hazifanani. Tafadhali jaribu tena.'; errEl.style.display = 'block'; return; }
+ if (!/^[0-9+\s\-]{7,15}$/.test(phone)) { errEl.innerText = 'Nambari ya simu si sahihi. Mfano: 0712345678'; errEl.style.display = 'block'; return; }
+
+ if (!useFirebase) { errEl.innerText = 'Hakuna muunganiko wa mtandao. Jaribu tena baadaye.'; errEl.style.display = 'block'; return; }
+
+ btn.innerText = 'Inasajili...'; btn.disabled = true;
+
+ // Generate a pending registration entry under 'registrations/' node
+ // Admin will approve and create full user account from there
+ var regId = 'reg_' + Date.now();
+ var newBizId = 'biz_' + regId;
+ var regData = {
+ name: name,
+ bizName: bizName,
+ phone: phone,
+ password: pass,
+ workDays: days.join(', '),
+ workHours: openTime + ' - ' + closeTime,
+ bizId: newBizId,
+ status: 'pending',
+ submittedAt: new Date().toISOString()
+ };
+
+ firebase.database().ref('registrations/' + regId).set(regData)
+ .then(function() {
+ btn.innerText = 'Jisajili Sasa'; btn.disabled = false;
+ sucEl.innerHTML = '<strong style="font-size:15px;">Maombi yako yamepokelewa!</strong><br><br>' +
+ 'Utapokea ujumbe mfupi (SMS) kutoka nambari <strong>0623811810</strong> au <strong>0688238063</strong> ' +
+ 'yenye <strong>username yako</strong> na <strong>password yako</strong> baada ya msimamizi kukiidhinisha.<br><br>' +
+ '<span style="color:rgba(46,204,113,0.7);font-size:11px;">Nambari ya Kumbukumbu: ' + regId + '</span>';
+ sucEl.style.display = 'block';
+ // Clear form
+ ['regName','regBizName','regPhone','regPass','regPass2'].forEach(function(id){ document.getElementById(id).value=''; });
+ document.querySelectorAll('#regWorkDays input[type=checkbox]').forEach(function(cb){ cb.checked=false; });
+ })
+ .catch(function(e) {
+ btn.innerText = 'Jisajili Sasa'; btn.disabled = false;
+ errEl.innerText = 'Hitilafu: ' + (e.message || 'Jaribu tena.'); errEl.style.display = 'block';
+ });
+ }
+
  </script>
 </body>
 </html>
