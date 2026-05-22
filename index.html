@@ -265,7 +265,7 @@
 
  <div id="customerPortal">
  <div class="customer-header">
- <h2 id="custBizTitle">Duka Letu</h2>
+ <h2 id="custBizTitle">Karibu Dukani</h2>
  <button class="btn btn-warning" onclick="switchCustomerTab('orders')">Oda Zangu</button>
  <button class="btn btn-info" onclick="switchCustomerTab('shop')">Dukani</button>
  </div>
@@ -1045,7 +1045,7 @@
  let id = biz_user ? biz_user.bizId : bizId;
  let url = window.location.origin + window.location.pathname + "?view=customer&bizId=" + id;
  navigator.clipboard.writeText(url);
- alert("Kiungo cha mteja kimenakiliwa! Unaweza kukifungua kwenye kifaa chochote sasa.");
+ showNotification('success','Kiungo Kimenakiliwa','Kiungo cha mteja kimenakiliwa! Unaweza kukifungua kwenye kifaa chochote sasa.',false);
  }
 
  function initApp() {
@@ -1497,7 +1497,7 @@
  biz_receipts.push({ id: Date.now(), date: new Date().toISOString(), itemsCount: cart.length, total, totalCost, items: [...cart] });
  biz_session.revenue += total; biz_session.cogs += totalCost;
  saveData(); cart = []; renderCart('admin'); renderInventory(); filterMauzoProducts(); updateDashboard(); renderReceipts();
- alert("Mauzo yamekamilika kikamilifu!");
+ showNotification('success','Mauzo Yamekamilika','Mauzo yamekamilika kikamilifu! Risiti imehifadhiwa.',false);
  }
 
  // ================================================================
@@ -1525,7 +1525,7 @@
  toast.style.animation = 'notifFadeOut 0.4s ease forwards';
  setTimeout(function(){ if(toast.parentNode) toast.remove(); }, 400);
  }
- }, 7000);
+ }, 5000);
  }
  container.appendChild(toast);
  }
@@ -1537,7 +1537,7 @@
  var wa = localStorage.getItem((bizId?bizId+'_':'') + 'biz_whatsapp');
  var msgHtml = 'Bidhaa <strong>' + p.name + '</strong> imebaki <strong>' + p.stock + ' ' + p.unit + '</strong> tu ghalani (' + pct + '% ya hisa ya awali).' +
  (wa ? ' <a href="https://wa.me/' + wa + '?text=' + encodeURIComponent('Taarifa: Mzigo wa '+p.name+' umebaki '+p.stock+' tu ghalani.') + '" target="_blank" style="color:#f39c12;font-weight:700;">Tuma WhatsApp</a>' : '');
- showNotification('warning', 'Tahadhari: Hisa ya "' + p.name + '" Imepungua (25%)', msgHtml, false);
+ showNotification('warning', 'Tahadhari: Hisa ya "' + p.name + '" Imepungua (25%)', msgHtml, true);
  }
 
  function triggerOutOfStockAlert(p) {
@@ -2123,7 +2123,7 @@
 
  // --- CUSTOMER PORTAL REALTIME ENGINE ---
  function initCustomerApp() {
- document.getElementById('custBizTitle').innerText = (biz_user ? biz_user.bizName : "Duka Letu");
+ document.getElementById('custBizTitle').innerText = "Karibu Dukani";
 
  if (useFirebase && bizId) {
  // Load categories first, then products
@@ -2153,8 +2153,8 @@
  firebase.database().ref('businesses/' + bizId + '/settings').once('value', function(snapshot) {
  let val = snapshot.val();
  if (val) {
- if (val.whatsapp) localStorage.setItem('biz_whatsapp', val.whatsapp);
- if (val.confirmMsg) localStorage.setItem('biz_confirm_msg', val.confirmMsg);
+ if (val.whatsapp) localStorage.setItem(bizId + '_biz_whatsapp', val.whatsapp);
+ if (val.confirmMsg) localStorage.setItem(bizId + '_biz_confirm_msg', val.confirmMsg);
  }
  });
  } else {
@@ -2229,8 +2229,8 @@
  list.innerHTML = '';
  let recent = biz_orders.slice().reverse().slice(0,10);
  if(recent.length === 0) { list.innerHTML = "<p>Hauna oda bado.</p>"; return; }
- let wa = localStorage.getItem('biz_whatsapp') || '';
- let msgTemplate = localStorage.getItem('biz_confirm_msg') || 'Oda yako imethibitishwa! Tafadhali wasiliana nasi kupitia {waAdmin}.';
+ let wa = localStorage.getItem((bizId?bizId+'_':'') + 'biz_whatsapp') || '';
+ let msgTemplate = localStorage.getItem((bizId?bizId+'_':'') + 'biz_confirm_msg') || 'Oda yako imethibitishwa! Tafadhali wasiliana nasi kupitia {waAdmin}.';
  
  recent.forEach(o => {
  let col = o.status === 'Inasubiri'?'var(--warning)':(o.status === 'Imethibitishwa'?'var(--primary)':'var(--success)');
@@ -2463,8 +2463,27 @@
  alert("Nywila imehifadhiwa!");
  }
  function factoryReset() {
- if(confirm("TAHADHARI: Hii itafuta data zote za mfumo kwenye kifaa hiki. Una uhakika?")) {
- localStorage.clear(); sessionStorage.clear(); window.location.reload();
+ if(confirm("TAHADHARI: Hii itafuta data zote za biashara hii kwenye kifaa hiki. Una uhakika?")) {
+ if(confirm("MARA YA PILI: Una uhakika kabisa? Data zote za mauzo, bidhaa, na ghala zitafutwa!")) {
+ var pfx = bizId ? bizId + '_' : '';
+ var keysToDelete = ['biz_categories','biz_products','biz_expenses','biz_receipts',
+ 'biz_summary','biz_orders','biz_session','biz_whatsapp','biz_confirm_msg','biz_user_pass'];
+ keysToDelete.forEach(function(k){ localStorage.removeItem(pfx + k); });
+ // Also clear Firebase data for this user
+ if (useFirebase && bizId) {
+ firebase.database().ref('businesses/' + bizId + '/products').remove();
+ firebase.database().ref('businesses/' + bizId + '/orders').remove();
+ firebase.database().ref('businesses/' + bizId + '/categories').remove();
+ }
+ // Re-initialise in-memory arrays
+ biz_categories = []; biz_products = []; biz_expenses = [];
+ biz_receipts = []; biz_summary = []; biz_orders = [];
+ biz_session = { isOpen:false, startTime:null, revenue:0, cogs:0, expenses:0, expiredLoss:0, soldProducts:{} };
+ cart = []; expiredCart = [];
+ renderInventory(); filterMauzoProducts(); renderExpiredProducts();
+ renderReceipts(); updateDashboard();
+ showNotification('success','Data Imefutwa','Data zote za biashara hii zimefutwa kikamilifu.',false);
+ }
  }
  }
  </script>
